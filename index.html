@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clinical Analytics Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo-mark">OA</div>
+        <div>
+          <p class="eyebrow">Orthopedic Surgery Wait-Time Analytics</p>
+          <h1>Clinical Analytics Dashboard</h1>
+        </div>
+      </div>
+      <div class="context-pill">
+        <span>Data Year: 2026</span>
+        <span>Region: Ontario</span>
+      </div>
+    </header>
+
+    <div class="layout-grid">
+      <aside class="sidebar">
+        <div class="panel-heading">
+          <h2>Filters</h2>
+          <p>Refine the view for executive summary analysis.</p>
+        </div>
+
+        <div class="control-group">
+          <label for="jointSelect">Joint Selection</label>
+          <select id="jointSelect">
+            <option value="hip">Hip Replacement</option>
+            <option value="knee">Knee Replacement</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="granularitySelect">Timeline Granularity</label>
+          <select id="granularitySelect">
+            <option value="quarter">By Quarter</option>
+            <option value="year">By Year</option>
+          </select>
+        </div>
+
+        <div class="control-group toggle-row">
+          <div>
+            <label for="dataModeToggle">Data Mode</label>
+            <p class="control-note">Switch between summary and synthetic cohort.</p>
+          </div>
+          <label class="switch">
+            <input id="dataModeToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="kpi-row">
+          <article class="kpi-card">
+            <p class="kpi-label">CIHI Benchmark</p>
+            <h2>Target Wait Time</h2>
+            <p class="kpi-value">182 Days</p>
+            <span class="kpi-note">National objective for elective surgery</span>
+          </article>
+
+          <article class="kpi-card">
+            <p class="kpi-label">CIHI Actual</p>
+            <h2>% Meeting Benchmark</h2>
+            <p class="kpi-value">75%</p>
+            <span class="kpi-note">National completion performance</span>
+          </article>
+
+          <article class="kpi-card">
+            <p class="kpi-label">Synthea Cohort</p>
+            <h2>Average Patient Wait</h2>
+            <p class="kpi-value" id="avgWaitValue">--</p>
+            <span class="kpi-note">Calculated from sample patient data</span>
+          </article>
+        </section>
+
+        <section class="chart-card primary-chart-card">
+          <div class="card-header">
+            <div>
+              <p class="card-eyebrow">Benchmark Comparison</p>
+              <h3>Median Wait Time vs CIHI Target</h3>
+            </div>
+            <span class="status-pill">Benchmark: 182 Days</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="comparisonChart"></canvas>
+          </div>
+        </section>
+
+        <section class="support-grid">
+          <article class="chart-card half-card">
+            <div class="card-header">
+              <div>
+                <p class="card-eyebrow">Demographic Breakdown</p>
+                <h3>Wait Times by Age Group</h3>
+              </div>
+            </div>
+            <div class="chart-wrapper small-chart">
+              <canvas id="demographicsChart"></canvas>
+            </div>
+          </article>
+
+          <article class="table-card half-card">
+            <div class="card-header">
+              <div>
+                <p class="card-eyebrow">Patient Sample</p>
+                <h3>Recent Synthetic Records</h3>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Diagnosis Date</th>
+                    <th>Surgery Date</th>
+                    <th>Wait Time</th>
+                  </tr>
+                </thead>
+                <tbody id="patientTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
