@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>CanRoute — Capacity/Demand Diagnostic v3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">CanRoute · Diagnostic View v3 · Joint Replacement (Hip &amp; Knee)</div>
+    <h1>Where the system is straining — and where it has room</h1>
+    <div class="sub">Same capacity/demand plot as before, with two reference lines now: the dashed diagonal marks <b>capacity = demand</b> (a queueing-theory equilibrium — utilization = 1); the dotted crosshairs mark the <b>median capacity and median demand</b> across this hospital set (how a hospital compares to its peers). Color remains the wait residual, not the zone — a hospital's position tells you its circumstances, its color tells you whether it's beating or missing what those circumstances predict.</div>
+  </header>
+
+  <div class="controls">
+    <button id="referenceToggle" class="toggle-btn" type="button" aria-pressed="true">
+      <span class="toggle-dot"></span>
+      <span class="toggle-label">Hide median reference context</span>
+    </button>
+  </div>
+
+  <div class="layout">
+    <div class="panel chart-panel">
+      <svg id="chart" viewBox="0 0 780 620"></svg>
+    </div>
+
+    <div class="panel sidebar">
+      <div class="side-block">
+        <h3>Wait residual (P50)</h3>
+        <div class="legend-grad"></div>
+        <div class="legend-row"><span>better than expected</span><span>worse</span></div>
+        <div class="legend-desc">Actual median wait minus the wait predicted from capacity-to-demand ratio. This is what's colored — never the quadrant a hospital sits in.</div>
+      </div>
+
+      <div class="side-block">
+        <h3>Tail flag</h3>
+        <div class="flag-legend">
+          <div class="flag-swatch"></div>
+          <span>P90 residual in the worst quartile. Ring thickness now scales with how far into that tail a hospital is.</span>
+        </div>
+      </div>
+
+      <div class="side-block">
+        <h3>Reference lines</h3>
+        <div class="legend-desc">
+          <span style="color:var(--line)">— — —</span> capacity = demand (utilization = 1)<br>
+          <span style="color:var(--median-line)">· · ·</span> median capacity / median demand (peer comparison)<br>
+          Bubble size = patients treated per quarter.
+        </div>
+      </div>
+
+      <div class="side-block" id="summaryBlock">
+        <h3>Dataset snapshot</h3>
+        <div id="summaryStats"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="zones">
+    <div class="zone-card z1"><b>Has slack</b>Capacity above peer median, demand below it. Calm and resourced — a candidate to absorb overflow once routing is live.</div>
+    <div class="zone-card z2"><b>Pressure cooker</b>Both capacity and demand above median. Busy, but resourced for it — watch the residual color to see if it's coping.</div>
+    <div class="zone-card z3"><b>Low-capacity equilibrium</b>Both below median. Quiet for now, but thin margins — vulnerable if regional demand shifts.</div>
+    <div class="zone-card z4"><b>Structural bottleneck</b>Demand above median, capacity below it. The clearest case for added resources rather than routing alone.</div>
+  </div>
+
+  <div class="footnote">
+    Zone boundaries are peer-relative (split at this hospital set's own median), independent of the capacity=demand diagonal, which is an absolute physical reference. The two can disagree — a hospital can be "above median capacity" for this set while still running a utilization ratio above 1. That gap is deliberate: median position says how you compare to peers, the diagonal says whether you're structurally keeping up with your own demand.
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<script src="./script.js"></script>
+</body>
+</html>
