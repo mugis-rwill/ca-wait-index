@@ -1,5 +1,5 @@
 async function initChart() {
-  const response = await fetch('../output/sample_output.json');
+  const response = await fetch('./output/sample_output.json');
   const payload = await response.json();
   const hospitals = payload.hospitals;
   const summary = payload.summary;
