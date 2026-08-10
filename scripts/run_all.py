@@ -1,6 +1,6 @@
 """
-run_all.py — end to end: read the raw BC workbook, produce hip.json and
-knee.json, each containing every available fiscal year.
+run_all.py — end to end: read the raw BC workbook, produce hip_provincial.json and
+knee_provincial.json, each containing every available fiscal year.
 
 Usage:
     python run_all.py --xlsx path/to/workbook.xlsx --out ../data
@@ -22,7 +22,7 @@ PROCEDURES = {
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--xlsx", required=True, help="Path to the BC surgical wait times workbook")
-    parser.add_argument("--out", default="../data", help="Output directory for hip.json / knee.json")
+    parser.add_argument("--out", default="../output", help="Output directory for hip_provincial.json / knee_provincial.json")
     args = parser.parse_args()
 
     print(f"Loading {args.xlsx} ...")

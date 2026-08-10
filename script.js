@@ -202,7 +202,7 @@ function init(datasets) {
         tooltip.innerHTML = `<span class="t-name">${h.name}</span>
           ${capacityLine}
           ${demandLine}
-          utilization: ${h.utilization.toFixed(4)}<br>
+          pressureIndex: ${h.pressureIndex.toFixed(4)}<br>
           wait P50: ${h.wait50}d (expected ${h.expected50.toFixed(0)}d)<br>
           residual P50: ${h.resid50 > 0 ? '+' : ''}${h.resid50.toFixed(0)}d<br>
           residual P90: ${h.resid90 > 0 ? '+' : ''}${h.resid90.toFixed(0)}d ${h.flagged ? '⚑' : ''}<br>

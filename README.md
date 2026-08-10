@@ -20,9 +20,12 @@ flags, quadrant zones, and chart geometry are all computed once in
   Procedures" workbook (provincial rows for Hip/Knee Replacement) and the
   StatCan 65+ population table.
 - **`scripts/compute.py`** — turns a cleaned (capacity, demand, wait50,
-  wait90, volume) table into the full frontend-ready payload: a linear
-  regression of wait time on utilization, residuals, P90 tail flags, a
-  capacity/demand quadrant zone, and precomputed chart pixel geometry.
+  wait90, volume) table into the full frontend-ready payload: a
+  two-variable linear regression of wait time on capacity and demand
+  (falling back to a single-variable regression on a synthetic
+  demand/capacity pressure index for small or highly collinear regional
+  groups), residuals, P90 tail flags, a capacity/demand quadrant zone, and
+  precomputed chart pixel geometry.
 - **`scripts/run_provincial.py`** — the real, working pipeline. For each
   province/year:
   - **capacity** = surgical volume per 100k of that province's 65+ population
