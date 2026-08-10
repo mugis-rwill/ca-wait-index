@@ -1,11 +1,8 @@
-# CanRoute — Provincial Diagnostic
+# CliniDashboard
 
-A capacity/demand diagnostic for hip & knee replacement wait times across
+This is a capacity/demand comparison tool for hip & knee replacement wait times across
 Canadian provinces (2021–2025), built from real CIHI wait-time data and
-StatCan population data. This is the lightweight, static-site half of the
-broader CanRoute project (cross-provincial patient routing); it's kept
-deliberately separate from any live routing app — just an offline pipeline
-that produces JSON, and a static site that renders it.
+StatCan population data. This repo has scripts that ingests raw data and calculates the capacity & demand metrics for each province and saves them as JSON files, then uses Javascript to render it.
 
 ## Architecture
 
@@ -35,9 +32,6 @@ flags, quadrant zones, and chart geometry are all computed once in
   - **`pctBenchmark`** = CIHI's "% meeting benchmark" is carried through as a
     secondary stress signal in the tooltip, not folded into either axis.
 
-  The first available year (2020) has no prior-year population baseline, so
-  it's skipped rather than assigned a fabricated growth rate — output covers
-  **2021–2025**.
 
   It also builds a **regional drill-down** from CIHI's own health-region
   breakdown (`hip_regional.json` / `knee_regional.json`, one payload per
@@ -87,6 +81,3 @@ python3 -m http.server 8000   # from the repo root
   a `scripts/ingest_bc.py` module (real per-hospital COMPLETED/WAITING
   capacity/demand, no placeholder needed) and a BC Ministry of Health
   Surgical Wait Times workbook, neither of which exists in `raw_data/` yet.
-- `output/sample_output.json` / `computed_output.json` are leftover
-  synthetic-data artifacts from an earlier prototype iteration, kept for
-  reference but not used by the current site.
