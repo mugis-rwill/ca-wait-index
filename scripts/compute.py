@@ -1,159 +1,147 @@
-import json
-import math
-from pathlib import Path
+"""
+compute.py — turns a cleaned (name, capacity, demand, wait50, wait90, volume)
+table into the fully computed, frontend-ready structure: regression-based
+expected wait, residuals, tail flags, quadrant zone, color, and precomputed
+chart pixel geometry. The frontend should only render this — it should never
+recompute statistics itself, so the math lives in exactly one place.
+"""
 
-ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_PATH = ROOT / "output" / "sample_output.json"
-
-RAW_HOSPITALS = [
-    {"name": "Riverside General", "capacity": 620, "demand": 520, "wait50": 118, "wait90": 210, "volume": 340},
-    {"name": "Lakeshore Regional", "capacity": 540, "demand": 610, "wait50": 165, "wait90": 305, "volume": 290},
-    {"name": "North Valley Health Ctr", "capacity": 410, "demand": 590, "wait50": 205, "wait90": 410, "volume": 180},
-    {"name": "Cedar Grove Hospital", "capacity": 700, "demand": 460, "wait50": 95, "wait90": 160, "volume": 400},
-    {"name": "Fraser Point Medical", "capacity": 480, "demand": 470, "wait50": 140, "wait90": 235, "volume": 250},
-    {"name": "Union Bay Regional", "capacity": 350, "demand": 520, "wait50": 240, "wait90": 470, "volume": 150},
-    {"name": "St. Alban's Surgical Ctr", "capacity": 600, "demand": 600, "wait50": 130, "wait90": 225, "volume": 330},
-    {"name": "Harborview Clinic", "capacity": 460, "demand": 340, "wait50": 88, "wait90": 145, "volume": 210},
-    {"name": "Pinehollow District", "capacity": 330, "demand": 400, "wait50": 205, "wait90": 320, "volume": 130},
-    {"name": "Kettleford Hospital", "capacity": 560, "demand": 530, "wait50": 205, "wait90": 460, "volume": 300},
-    {"name": "Marlbank General", "capacity": 500, "demand": 380, "wait50": 100, "wait90": 175, "volume": 260},
-    {"name": "Silver Creek Regional", "capacity": 640, "demand": 560, "wait50": 108, "wait90": 190, "volume": 360},
-    {"name": "Dunmore Community", "capacity": 380, "demand": 300, "wait50": 118, "wait90": 200, "volume": 160},
-    {"name": "Elmsworth Medical Ctr", "capacity": 450, "demand": 610, "wait50": 260, "wait90": 380, "volume": 220},
-    {"name": "Thornbury General", "capacity": 300, "demand": 340, "wait50": 175, "wait90": 300, "volume": 110},
-    {"name": "Oakhaven Surgical Inst.", "capacity": 690, "demand": 640, "wait50": 150, "wait90": 250, "volume": 410},
-]
+import statistics as stats
 
 
 def fit_linear(xs, ys):
     n = len(xs)
-    mx = sum(xs) / n
-    my = sum(ys) / n
+    mx, my = sum(xs) / n, sum(ys) / n
     num = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
     den = sum((x - mx) ** 2 for x in xs)
-    b = num / den
+    b = num / den if den else 0.0
     a = my - b * mx
-    return {"a": a, "b": b}
+    return a, b
 
 
-def median(values):
-    sorted_values = sorted(values)
-    mid = len(sorted_values) // 2
-    if len(sorted_values) % 2:
-        return sorted_values[mid]
-    return (sorted_values[mid - 1] + sorted_values[mid]) / 2
+def lerp_color(c1, c2, t):
+    p1 = [int(c1[i:i+2], 16) for i in (0, 2, 4)]
+    p2 = [int(c2[i:i+2], 16) for i in (0, 2, 4)]
+    rgb = [round(v + (p2[i] - v) * t) for i, v in enumerate(p1)]
+    return "#%02X%02X%02X" % tuple(rgb)
 
 
-def build_payload():
-    hospitals = []
-    for raw in RAW_HOSPITALS:
-        hospitals.append({
-            "name": raw["name"],
-            "capacity": raw["capacity"],
-            "demand": raw["demand"],
-            "wait50": raw["wait50"],
-            "wait90": raw["wait90"],
-            "volume": raw["volume"],
-        })
+def resid_color(r, max_abs_resid):
+    if max_abs_resid == 0:
+        return "#E4E0CE"
+    t = max(-1.0, min(1.0, r / max_abs_resid))
+    if t <= 0:
+        return lerp_color("2F8F76", "E4E0CE", t + 1)
+    return lerp_color("E4E0CE", "C1443C", t)
 
-    for hospital in hospitals:
-        hospital["utilization"] = hospital["demand"] / hospital["capacity"]
 
-    util = [hospital["utilization"] for hospital in hospitals]
-    fit50 = fit_linear(util, [hospital["wait50"] for hospital in hospitals])
-    fit90 = fit_linear(util, [hospital["wait90"] for hospital in hospitals])
+CHART_DEFAULTS = {
+    "width": 780, "height": 620,
+    "margin": {"top": 30, "right": 30, "bottom": 55, "left": 65},
+}
 
-    for hospital in hospitals:
-        hospital["expected50"] = fit50["a"] + fit50["b"] * hospital["utilization"]
-        hospital["expected90"] = fit90["a"] + fit90["b"] * hospital["utilization"]
-        hospital["resid50"] = hospital["wait50"] - hospital["expected50"]
-        hospital["resid90"] = hospital["wait90"] - hospital["expected90"]
 
-    med_capacity = median([hospital["capacity"] for hospital in hospitals])
-    med_demand = median([hospital["demand"] for hospital in hospitals])
+def compute_year(records: list[dict], title: str) -> dict:
+    """
+    records: list of dicts with name, capacity, demand, wait50, wait90, volume
+    (already cleaned — no NaNs). Returns the full frontend-ready payload for
+    one year.
+    """
+    records = [r for r in records if r["capacity"] and r["demand"] is not None
+               and r["wait50"] is not None and r["wait90"] is not None]
+    if not records:
+        return None
 
-    sorted_resid90 = sorted([hospital["resid90"] for hospital in hospitals])
-    q3_idx = math.floor(len(sorted_resid90) * 0.75)
-    q3_90 = sorted_resid90[q3_idx]
-    max_90 = max(sorted_resid90)
+    for r in records:
+        r["utilization"] = r["demand"] / r["capacity"]
 
-    max_abs_resid = max(abs(hospital["resid50"]) for hospital in hospitals)
-    for hospital in hospitals:
-        flagged = hospital["resid90"] >= q3_90
-        hospital["flagged"] = flagged
-        if flagged:
-            span = max(1, max_90 - q3_90)
-            hospital["flagIntensity"] = max(0.15, min(1, (hospital["resid90"] - q3_90) / span))
-        else:
-            hospital["flagIntensity"] = 0
+    util = [r["utilization"] for r in records]
+    a50, b50 = fit_linear(util, [r["wait50"] for r in records])
+    a90, b90 = fit_linear(util, [r["wait90"] for r in records])
 
-        t = max(-1, min(1, hospital["resid50"] / max_abs_resid))
-        if t <= 0:
-            hospital["color"] = "#2F8F76"
-        else:
-            hospital["color"] = "#C1443C"
+    for r in records:
+        r["expected50"] = a50 + b50 * r["utilization"]
+        r["expected90"] = a90 + b90 * r["utilization"]
+        r["resid50"] = r["wait50"] - r["expected50"]
+        r["resid90"] = r["wait90"] - r["expected90"]
 
-    chart = {
-        "width": 780,
-        "height": 620,
-        "margin": {"top": 30, "right": 30, "bottom": 55, "left": 65},
-        "capExtent": [280, 730],
-        "demExtent": [270, 660],
-        "volExtent": [min(h["volume"] for h in hospitals), max(h["volume"] for h in hospitals)],
+    resid90_sorted = sorted(r["resid90"] for r in records)
+    q3_idx = int(len(resid90_sorted) * 0.75)
+    q3_90 = resid90_sorted[q3_idx]
+    max90 = max(resid90_sorted)
+    for r in records:
+        r["flagged"] = r["resid90"] >= q3_90
+        r["flagIntensity"] = (
+            max(0.15, min(1.0, (r["resid90"] - q3_90) / max(1.0, (max90 - q3_90))))
+            if r["flagged"] else 0.0
+        )
+
+    max_abs_resid = max(abs(r["resid50"]) for r in records)
+    for r in records:
+        r["color"] = resid_color(r["resid50"], max_abs_resid)
+
+    med_capacity = stats.median(r["capacity"] for r in records)
+    med_demand = stats.median(r["demand"] for r in records)
+    zone_labels = {
+        (True, True): ("z1", "Structural bottleneck"),   # low capacity, high demand
+        (False, True): ("z2", "Pressure cooker"),         # high capacity, high demand
+        (True, False): ("z3", "Low-capacity equilibrium"),# low capacity, low demand
+        (False, False): ("z4", "Has slack"),               # high capacity, low demand
     }
-    chart["plotWidth"] = chart["width"] - chart["margin"]["left"] - chart["margin"]["right"]
-    chart["plotHeight"] = chart["height"] - chart["margin"]["top"] - chart["margin"]["bottom"]
+    for r in records:
+        key = (r["capacity"] < med_capacity, r["demand"] > med_demand)
+        r["zone"], r["zoneLabel"] = zone_labels[key]
 
-    def sx(value):
-        return chart["margin"]["left"] + (value - chart["capExtent"][0]) / (chart["capExtent"][1] - chart["capExtent"][0]) * chart["plotWidth"]
+    # ---- chart geometry ----
+    cap_vals = [r["capacity"] for r in records]
+    dem_vals = [r["demand"] for r in records]
+    vol_vals = [r["volume"] for r in records]
+    cap_pad = (max(cap_vals) - min(cap_vals)) * 0.1 or 1
+    dem_pad = (max(dem_vals) - min(dem_vals)) * 0.1 or 1
+    cap_extent = [min(cap_vals) - cap_pad, max(cap_vals) + cap_pad]
+    dem_extent = [min(dem_vals) - dem_pad, max(dem_vals) + dem_pad]
+    vol_extent = [min(vol_vals), max(vol_vals)]
 
-    def sy(value):
-        return chart["margin"]["top"] + chart["plotHeight"] - (value - chart["demExtent"][0]) / (chart["demExtent"][1] - chart["demExtent"][0]) * chart["plotHeight"]
+    margin = CHART_DEFAULTS["margin"]
+    width, height = CHART_DEFAULTS["width"], CHART_DEFAULTS["height"]
+    plot_w = width - margin["left"] - margin["right"]
+    plot_h = height - margin["top"] - margin["bottom"]
 
-    def r_scale(value):
-        t = (value - chart["volExtent"][0]) / (chart["volExtent"][1] - chart["volExtent"][0])
+    def sx(v):
+        return margin["left"] + (v - cap_extent[0]) / (cap_extent[1] - cap_extent[0]) * plot_w
+
+    def sy(v):
+        return margin["top"] + plot_h - (v - dem_extent[0]) / (dem_extent[1] - dem_extent[0]) * plot_h
+
+    def r_scale(v):
+        t = (v - vol_extent[0]) / (vol_extent[1] - vol_extent[0]) if vol_extent[1] > vol_extent[0] else 0.5
         return 7 + t * 13
 
-    for hospital in hospitals:
-        hospital["cx"] = sx(hospital["capacity"])
-        hospital["cy"] = sy(hospital["demand"])
-        hospital["radius"] = r_scale(hospital["volume"])
-        hospital["zone"] = "z4"
-        if hospital["capacity"] > med_capacity and hospital["demand"] < med_demand:
-            hospital["zone"] = "z1"
-        elif hospital["capacity"] > med_capacity and hospital["demand"] > med_demand:
-            hospital["zone"] = "z2"
-        elif hospital["capacity"] < med_capacity and hospital["demand"] < med_demand:
-            hospital["zone"] = "z3"
-        hospital["zoneLabel"] = {
-            "z1": "Has slack",
-            "z2": "Pressure cooker",
-            "z3": "Low-capacity equilibrium",
-            "z4": "Structural bottleneck",
-        }[hospital["zone"]]
+    for r in records:
+        r["cx"] = sx(r["capacity"])
+        r["cy"] = sy(r["demand"])
+        r["radius"] = r_scale(r["volume"])
+
+    flagged_count = sum(1 for r in records if r["flagged"])
+    bottleneck_count = sum(1 for r in records if r["zone"] == "z1")
 
     return {
         "meta": {
-            "title": "CanRoute — Capacity/Demand Diagnostic v3",
-            "chart": chart,
+            "title": title,
+            "chart": {
+                "width": width, "height": height, "margin": margin,
+                "capExtent": cap_extent, "demExtent": dem_extent, "volExtent": vol_extent,
+                "plotWidth": plot_w, "plotHeight": plot_h,
+            },
+            "demand_is_placeholder": False,
+            "dataSource": "BC Ministry of Health — Surgical Wait Times (quarterly), aggregated to fiscal year",
         },
         "summary": {
-            "hospitalsShown": len(hospitals),
+            "hospitalsShown": len(records),
             "medianCapacity": med_capacity,
             "medianDemand": med_demand,
-            "flaggedCount": sum(1 for hospital in hospitals if hospital["flagged"]),
-            "bottleneckCount": sum(1 for hospital in hospitals if hospital["capacity"] < med_capacity and hospital["demand"] > med_demand),
+            "flaggedCount": flagged_count,
+            "bottleneckCount": bottleneck_count,
         },
-        "hospitals": hospitals,
+        "hospitals": records,
     }
-
-
-def main():
-    payload = build_payload()
-    with OUTPUT_PATH.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, indent=2)
-        handle.write("\n")
-
-
-if __name__ == "__main__":
-    main()

@@ -11,20 +11,28 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">CanRoute · Diagnostic View v3 · Joint Replacement (Hip &amp; Knee)</div>
+    <div class="eyebrow">CanRoute · Provincial Diagnostic · Hip &amp; Knee Replacement · CIHI 2021–2025</div>
     <h1>Where the system is straining — and where it has room</h1>
-    <div class="sub">Same capacity/demand plot as before, with two reference lines now: the dashed diagonal marks <b>capacity = demand</b> (a queueing-theory equilibrium — utilization = 1); the dotted crosshairs mark the <b>median capacity and median demand</b> across this hospital set (how a hospital compares to its peers). Color remains the wait residual, not the zone — a hospital's position tells you its circumstances, its color tells you whether it's beating or missing what those circumstances predict.</div>
+    <div class="sub">Capacity is real surgical throughput (volume per 100k of the province's 65+ population); demand is a real, independent pressure signal — the year-over-year growth rate of that same 65+ population. The two are different units on purpose: a province can have fine <i>current</i> per-capita throughput while its demand curve is about to outrun it. The dotted crosshairs mark the <b>median capacity and median demand</b> across this province set. Color is the wait residual (actual vs. expected wait, from a regression on utilization) — a province's position tells you its circumstances, its color tells you whether it's beating or missing what those circumstances predict.</div>
   </header>
 
   <div class="controls">
+    <div class="seg-group" id="procedureToggle" role="tablist" aria-label="Procedure">
+      <button class="seg-btn" data-procedure="hip" type="button">Hip</button>
+      <button class="seg-btn" data-procedure="knee" type="button">Knee</button>
+    </div>
+    <div class="seg-group" id="yearTabs" role="tablist" aria-label="Year"></div>
     <button id="referenceToggle" class="toggle-btn" type="button" aria-pressed="true">
       <span class="toggle-dot"></span>
       <span class="toggle-label">Hide median reference context</span>
     </button>
   </div>
 
+  <div class="province-tabs" id="provinceTabs" role="tablist" aria-label="Province"></div>
+
   <div class="layout">
     <div class="panel chart-panel">
+      <div class="chart-caption" id="chartCaption"></div>
       <svg id="chart" viewBox="0 0 780 620"></svg>
     </div>
 
@@ -33,23 +41,22 @@
         <h3>Wait residual (P50)</h3>
         <div class="legend-grad"></div>
         <div class="legend-row"><span>better than expected</span><span>worse</span></div>
-        <div class="legend-desc">Actual median wait minus the wait predicted from capacity-to-demand ratio. This is what's colored — never the quadrant a hospital sits in.</div>
+        <div class="legend-desc">Actual median wait minus the wait predicted from the utilization regression. This is what's colored — never the quadrant a province sits in.</div>
       </div>
 
       <div class="side-block">
         <h3>Tail flag</h3>
         <div class="flag-legend">
           <div class="flag-swatch"></div>
-          <span>P90 residual in the worst quartile. Ring thickness now scales with how far into that tail a hospital is.</span>
+          <span>P90 residual in the worst quartile. Ring thickness scales with how far into that tail a province is.</span>
         </div>
       </div>
 
       <div class="side-block">
         <h3>Reference lines</h3>
         <div class="legend-desc">
-          <span style="color:var(--line)">— — —</span> capacity = demand (utilization = 1)<br>
           <span style="color:var(--median-line)">· · ·</span> median capacity / median demand (peer comparison)<br>
-          Bubble size = patients treated per quarter.
+          Bubble size = surgical volume that year.
         </div>
       </div>
 
@@ -57,18 +64,23 @@
         <h3>Dataset snapshot</h3>
         <div id="summaryStats"></div>
       </div>
+
+      <div class="side-block" id="provinceDetail">
+        <h3>Selected province</h3>
+        <div id="provinceDetailBody" class="legend-desc">Click a province tab above to see its 2021–2025 wait-time trend.</div>
+      </div>
     </div>
   </div>
 
   <div class="zones">
-    <div class="zone-card z1"><b>Has slack</b>Capacity above peer median, demand below it. Calm and resourced — a candidate to absorb overflow once routing is live.</div>
+    <div class="zone-card z1"><b>Structural bottleneck</b>Capacity below peer median, demand above it. The clearest case for added resources rather than routing alone.</div>
     <div class="zone-card z2"><b>Pressure cooker</b>Both capacity and demand above median. Busy, but resourced for it — watch the residual color to see if it's coping.</div>
     <div class="zone-card z3"><b>Low-capacity equilibrium</b>Both below median. Quiet for now, but thin margins — vulnerable if regional demand shifts.</div>
-    <div class="zone-card z4"><b>Structural bottleneck</b>Demand above median, capacity below it. The clearest case for added resources rather than routing alone.</div>
+    <div class="zone-card z4"><b>Has slack</b>Capacity above peer median, demand below it. Calm and resourced — a candidate to absorb overflow once routing is live.</div>
   </div>
 
   <div class="footnote">
-    Zone boundaries are peer-relative (split at this hospital set's own median), independent of the capacity=demand diagonal, which is an absolute physical reference. The two can disagree — a hospital can be "above median capacity" for this set while still running a utilization ratio above 1. That gap is deliberate: median position says how you compare to peers, the diagonal says whether you're structurally keeping up with your own demand.
+    Zone boundaries are peer-relative (split at this province (or region) set's own median capacity/demand for the selected year). In the provincial view, "% meeting benchmark" (CIHI's own timeliness target) is shown in the tooltip as an independent stress signal, not folded into either axis. Click a province to drill into its CIHI health regions — there, no sub-provincial population data exists, so capacity is raw surgical volume and demand is the benchmark-miss rate itself.
   </div>
 </div>
 
