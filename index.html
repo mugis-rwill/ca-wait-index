@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>CanRoute — Capacity/Demand Diagnostic v3</title>
+<title>CliniDashboard — Capacity/Demand Diagnostic v3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -11,9 +11,9 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">CanRoute · Provincial Diagnostic · Hip &amp; Knee Replacement · CIHI 2021–2025</div>
+    <div class="eyebrow">CliniDashboard · Provincial Diagnostic · Hip &amp; Knee Replacement · CIHI 2021–2025</div>
     <h1>Where the system is straining — and where it has room</h1>
-    <div class="sub">Capacity is real surgical throughput (volume per 100k of the province's 65+ population); demand is a real, independent pressure signal — the year-over-year growth rate of that same 65+ population. The two are different units on purpose: a province can have fine <i>current</i> per-capita throughput while its demand curve is about to outrun it. The dotted crosshairs mark the <b>median capacity and median demand</b> across this province set. Color is the wait residual (actual vs. expected wait, from a regression on utilization) — a province's position tells you its circumstances, its color tells you whether it's beating or missing what those circumstances predict.</div>
+    <div class="sub">Capacity is real surgical throughput (volume per 100k of the province's 65+ population); demand is a real, independent pressure signal — the year-over-year growth rate of that same 65+ population. The two are different units on purpose: a province can have fine <i>current</i> per-capita throughput while its demand curve is about to outrun it. The dotted crosshairs mark the <b>median capacity and median demand</b> across this province set. Color is the wait residual (actual vs. expected wait, from a regression on capacity and demand) — a province's position tells you its circumstances, its color tells you whether it's beating or missing what those circumstances predict.</div>
   </header>
 
   <div class="controls">
@@ -41,7 +41,7 @@
         <h3>Wait residual (P50)</h3>
         <div class="legend-grad"></div>
         <div class="legend-row"><span>better than expected</span><span>worse</span></div>
-        <div class="legend-desc">Actual median wait minus the wait predicted from the utilization regression. This is what's colored — never the quadrant a province sits in.</div>
+        <div class="legend-desc">Actual median wait minus the wait predicted from a regression on capacity and demand. This is what's colored — never the quadrant a province sits in.</div>
       </div>
 
       <div class="side-block">

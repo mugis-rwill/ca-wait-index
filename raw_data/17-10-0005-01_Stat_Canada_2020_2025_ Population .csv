@@ -1,4 +1,46 @@
 REF_DATE,GEO,DGUID,Gender,Age group,UOM,UOM_ID,SCALAR_FACTOR,SCALAR_ID,VECTOR,COORDINATE,VALUE,STATUS,SYMBOL,TERMINATED,DECIMALS
+2019,Canada,2021A000011124,Total - gender,65 years and older,Persons,249,units,0,v466686,1.1.104,6573259,,,,0
+2019,Canada,2021A000011124,Men+,65 years and older,Persons,249,units,0,v466687,1.2.104,3020231,,,,0
+2019,Canada,2021A000011124,Women+,65 years and older,Persons,249,units,0,v466688,1.3.104,3553028,,,,0
+2019,Newfoundland and Labrador,2021A000210,Total - gender,65 years and older,Persons,249,units,0,v467001,2.1.104,113764,,,,0
+2019,Newfoundland and Labrador,2021A000210,Men+,65 years and older,Persons,249,units,0,v467002,2.2.104,53529,,,,0
+2019,Newfoundland and Labrador,2021A000210,Women+,65 years and older,Persons,249,units,0,v467003,2.3.104,60235,,,,0
+2019,Prince Edward Island,2021A000211,Total - gender,65 years and older,Persons,249,units,0,v467316,3.1.104,30875,,,,0
+2019,Prince Edward Island,2021A000211,Men+,65 years and older,Persons,249,units,0,v467317,3.2.104,14118,,,,0
+2019,Prince Edward Island,2021A000211,Women+,65 years and older,Persons,249,units,0,v467318,3.3.104,16757,,,,0
+2019,Nova Scotia,2021A000212,Total - gender,65 years and older,Persons,249,units,0,v467631,4.1.104,202688,,,,0
+2019,Nova Scotia,2021A000212,Men+,65 years and older,Persons,249,units,0,v467632,4.2.104,93017,,,,0
+2019,Nova Scotia,2021A000212,Women+,65 years and older,Persons,249,units,0,v467633,4.3.104,109671,,,,0
+2019,New Brunswick,2021A000213,Total - gender,65 years and older,Persons,249,units,0,v467946,5.1.104,165909,,,,0
+2019,New Brunswick,2021A000213,Men+,65 years and older,Persons,249,units,0,v467947,5.2.104,76901,,,,0
+2019,New Brunswick,2021A000213,Women+,65 years and older,Persons,249,units,0,v467948,5.3.104,89008,,,,0
+2019,Quebec,2021A000224,Total - gender,65 years and older,Persons,249,units,0,v468261,6.1.104,1622802,,,,0
+2019,Quebec,2021A000224,Men+,65 years and older,Persons,249,units,0,v468262,6.2.104,745796,,,,0
+2019,Quebec,2021A000224,Women+,65 years and older,Persons,249,units,0,v468263,6.3.104,877006,,,,0
+2019,Ontario,2021A000235,Total - gender,65 years and older,Persons,249,units,0,v468576,7.1.104,2502351,,,,0
+2019,Ontario,2021A000235,Men+,65 years and older,Persons,249,units,0,v468577,7.2.104,1134462,,,,0
+2019,Ontario,2021A000235,Women+,65 years and older,Persons,249,units,0,v468578,7.3.104,1367889,,,,0
+2019,Manitoba,2021A000246,Total - gender,65 years and older,Persons,249,units,0,v468891,8.1.104,215278,,,,0
+2019,Manitoba,2021A000246,Men+,65 years and older,Persons,249,units,0,v468892,8.2.104,98139,,,,0
+2019,Manitoba,2021A000246,Women+,65 years and older,Persons,249,units,0,v468893,8.3.104,117139,,,,0
+2019,Saskatchewan,2021A000247,Total - gender,65 years and older,Persons,249,units,0,v469206,9.1.104,185352,,,,0
+2019,Saskatchewan,2021A000247,Men+,65 years and older,Persons,249,units,0,v469207,9.2.104,85705,,,,0
+2019,Saskatchewan,2021A000247,Women+,65 years and older,Persons,249,units,0,v469208,9.3.104,99647,,,,0
+2019,Alberta,2021A000248,Total - gender,65 years and older,Persons,249,units,0,v469521,10.1.104,577725,,,,0
+2019,Alberta,2021A000248,Men+,65 years and older,Persons,249,units,0,v469522,10.2.104,270528,,,,0
+2019,Alberta,2021A000248,Women+,65 years and older,Persons,249,units,0,v469523,10.3.104,307197,,,,0
+2019,British Columbia,2021A000259,Total - gender,65 years and older,Persons,249,units,0,v469836,11.1.104,945713,,,,0
+2019,British Columbia,2021A000259,Men+,65 years and older,Persons,249,units,0,v469837,11.2.104,442386,,,,0
+2019,British Columbia,2021A000259,Women+,65 years and older,Persons,249,units,0,v469838,11.3.104,503327,,,,0
+2019,Yukon,2021A000260,Total - gender,65 years and older,Persons,249,units,0,v470151,12.1.104,5342,,,,0
+2019,Yukon,2021A000260,Men+,65 years and older,Persons,249,units,0,v470152,12.2.104,2802,,,,0
+2019,Yukon,2021A000260,Women+,65 years and older,Persons,249,units,0,v470153,12.3.104,2540,,,,0
+2019,Northwest Territories,2021A000261,Total - gender,65 years and older,Persons,249,units,0,v479955,14.1.104,3901,,,,0
+2019,Northwest Territories,2021A000261,Men+,65 years and older,Persons,249,units,0,v479956,14.2.104,2031,,,,0
+2019,Northwest Territories,2021A000261,Women+,65 years and older,Persons,249,units,0,v479957,14.3.104,1870,,,,0
+2019,Nunavut,2021A000262,Total - gender,65 years and older,Persons,249,units,0,v480270,15.1.104,1559,,,,0
+2019,Nunavut,2021A000262,Men+,65 years and older,Persons,249,units,0,v480271,15.2.104,817,,,,0
+2019,Nunavut,2021A000262,Women+,65 years and older,Persons,249,units,0,v480272,15.3.104,742,,,,0
 2020,Canada,2021A000011124,Total - gender,65 years and older,Persons,249,units,0,v466686,1.1.104,6809521,,,,0
 2020,Canada,2021A000011124,Men+,65 years and older,Persons,249,units,0,v466687,1.2.104,3135087,,,,0
 2020,Canada,2021A000011124,Women+,65 years and older,Persons,249,units,0,v466688,1.3.104,3674434,,,,0

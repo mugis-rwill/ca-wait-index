@@ -177,28 +177,3 @@ def population_growth(pop_df: pd.DataFrame) -> pd.DataFrame:
         (pop_df["population"] - pop_df["prev_population"]) / pop_df["prev_population"] * 100
     )
     return pop_df.dropna(subset=["growth_pct"])[["province", "year", "population", "growth_pct"]]
-
-
-def combine_procedures(wide: pd.DataFrame) -> pd.DataFrame:
-    """
-    Collapse Hip + Knee Replacement into one row per province: volumes sum,
-    wait times are volume-weighted averages. This mirrors how the earlier
-    diagnostic charts treated "joint replacement" as one combined figure.
-    Comment this out (and keep `wide` per-procedure) if you'd rather chart
-    hip and knee separately.
-    """
-    rows = []
-    for province, grp in wide.groupby("province"):
-        grp = grp.dropna(subset=["volume"])
-        if grp.empty:
-            continue
-        total_volume = grp["volume"].sum()
-        wait50 = (grp["wait50"] * grp["volume"]).sum() / total_volume if grp["wait50"].notna().any() else None
-        wait90 = (grp["wait90"] * grp["volume"]).sum() / total_volume if grp["wait90"].notna().any() else None
-        rows.append({
-            "province": province,
-            "volume": total_volume,
-            "wait50": wait50,
-            "wait90": wait90,
-        })
-    return pd.DataFrame(rows)
