@@ -1,6 +1,6 @@
 const DATA_SOURCES = {
-  hip: '../output/hip_provincial.json', knee: '../output/knee_provincial.json',
-  hipRegional: '../output/hip_regional.json', kneeRegional: '../output/knee_regional.json',
+  hip: './output/hip_provincial.json', knee: './output/knee_provincial.json',
+  hipRegional: './output/hip_regional.json', kneeRegional: './output/knee_regional.json',
 };
 const ZONE_CARD_SELECTOR = (zone) => `.zone-card.${zone}`;
 const ns = 'http://www.w3.org/2000/svg';
