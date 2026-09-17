@@ -8,8 +8,7 @@ _archive/
 # make them, and their data. Not part of the site. index.html depends only on
 # build_master_table.py, make_benchmark_doc.py and benchmark_template.html;
 # everything below is a separate work product kept on disk for local use.
-# build_all.py runs these steps when the scripts are present and skips them
-# with a note when they are not, so it works on a fresh clone.
+# build_all.py does not run them; each is invoked on its own.
 scripts/matched_pairs.py
 scripts/make_charts.py
 scripts/charts_template.html
@@ -57,3 +56,8 @@ output/pair_year_detail_fy.json
 
 # The local viewer for the above. Generated, and points at ignored files.
 deliverables.html
+
+# Internal notes: repo housekeeping, the archived model, and everything removed
+# from README.md as not relevant to the public. Local only.
+MEMORY.md
+output/.index_build_sha256

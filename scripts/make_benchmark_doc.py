@@ -77,8 +77,10 @@ body margin. Everything visual still comes from the page's own <style> block.
 Output: output/benchmark_view.html, index.html
 """
 
+import hashlib
 import json
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -253,7 +255,33 @@ def build_window(key):
     }
 
 
+# index.html is also edited by hand. The build remembers a hash of what it last
+# wrote; if the file has changed since, the edits are someone's work and the
+# build stops rather than discard them. Port the edits into the template (or
+# pass --force to overwrite deliberately), then build again.
+STAMP = os.path.join(OUT, ".index_build_sha256")
+
+def _sha(text):
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+def hand_edited(index_path):
+    if not (os.path.exists(index_path) and os.path.exists(STAMP)):
+        return False
+    with open(index_path) as fh, open(STAMP) as st:
+        return _sha(fh.read()) != st.read().strip()
+
+
 def main():
+    force = "--force" in sys.argv
+    # --out PATH writes the page there instead of index.html, leaving index.html
+    # and the stamp alone -- for diffing a hand-edited index.html against a build.
+    out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else None
+    index_path = out or os.path.join(ROOT, "index.html")
+    if out is None and hand_edited(index_path) and not force:
+        sys.exit("index.html has been edited by hand since the last build; refusing to "
+                 "overwrite it.\nPort the edits into scripts/benchmark_template.html and "
+                 "rebuild, or run with --force to discard them.")
+
     payload = {
         "benchmark": BENCHMARK,
         "benchmark_source": BENCHMARK_SOURCE,
@@ -269,9 +297,12 @@ def main():
     with open(path, "w") as fh:
         fh.write(html)
 
-    index_path = os.path.join(ROOT, "index.html")
+    doc = as_document(html)
     with open(index_path, "w") as fh:
-        fh.write(as_document(html))
+        fh.write(doc)
+    if out is None:
+        with open(STAMP, "w") as fh:
+            fh.write(_sha(doc))
 
     print(f"benchmark view -> {path} ({len(html):,} bytes)")
     print(f"site index     -> {index_path}")

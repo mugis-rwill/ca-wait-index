@@ -6,19 +6,20 @@
 <meta name="description" content="Hip and knee replacement wait times in ten Canadian provinces, 2020-2025, plotted against the 182-day benchmark. Source: CIHI Table 1.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%8F%3C/text%3E%3C/svg%3E">
 <style>:root{color-scheme:light dark}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>The Benchmark Line</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>Canada Hip &amp; Knee Wait-Times Index</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
   --plane:#f4f4f1; --surface:#fcfcfb; --surface-2:#f0f0ec;
   --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
   --grid:#e1e0d9; --axis:#c3c2b7; --rule:rgba(11,11,11,.10);
-  --within:#2a78d6; --within-soft:rgba(42,120,214,.15); --beyond:#eb6834;
-  --beyond-soft:rgba(235,104,52,.13); --bench:#0b0b0b; --divider:#c3c2b7;
+  --within:#1f66c9; --within-soft:rgba(31,102,201,.50); --beyond:#eb6834;
+  --beyond-soft:rgba(235,104,52,.20); --bench:#0b0b0b; --divider:#c3c2b7;
   --vol:#8d8b84;
   --chip:#fcfcfb; --chip-on:#0b0b0b; --chip-on-ink:#fcfcfb;
-  --serif:"Newsreader",Georgia,"Times New Roman",serif;
-  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --logo-plate:transparent; --logo-pad:0;
+  --display:"Hanken Grotesk","Helvetica Neue",Arial,system-ui,sans-serif;
+  --sans:"Hanken Grotesk","Helvetica Neue",Arial,system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -29,6 +30,7 @@
   --beyond-soft:rgba(217,89,38,.20); --bench:#fff; --divider:#383835;
   --vol:#7e7c76;
   --chip:#1a1a19; --chip-on:#fff; --chip-on-ink:#0d0d0d;
+  --logo-plate:#fff; --logo-pad:8px 10px;
 }}
 :root[data-theme="dark"]{
   --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
@@ -38,25 +40,52 @@
   --beyond-soft:rgba(217,89,38,.20); --bench:#fff; --divider:#383835;
   --vol:#7e7c76;
   --chip:#1a1a19; --chip-on:#fff; --chip-on-ink:#0d0d0d;
+  --logo-plate:#fff; --logo-pad:8px 10px;
 }
 *{box-sizing:border-box}
 body{background:var(--plane);color:var(--ink);font-family:var(--sans);
   font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1140px;margin:0 auto;padding:48px 24px 80px}
-.masthead{border-bottom:2px solid var(--ink);padding-bottom:20px}
+/* Masthead: logo top-left, the title lockup beside it, the standfirst and
+   contents line beneath both. */
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:20px;
+  display:grid;grid-template-columns:auto 1fr auto;gap:0 30px;align-items:center}
+.theme-btn{grid-column:3;grid-row:1;align-self:start;width:34px;height:34px;padding:0;
+  display:grid;place-items:center;cursor:pointer;border-radius:2px;
+  background:var(--chip);color:var(--ink-2);border:1px solid var(--rule);transition:color .12s,border-color .12s}
+.theme-btn:hover{color:var(--ink);border-color:var(--axis)}
+.theme-btn:focus-visible{outline:2px solid var(--within);outline-offset:2px}
+.theme-btn svg{width:17px;height:17px;display:block}
+.theme-btn[data-mode="light"] .sun{display:none}
+.theme-btn[data-mode="dark"] .moon{display:none}
+.masthead .logo{grid-column:1;grid-row:1;justify-self:start;display:block;
+  background:var(--logo-plate);padding:var(--logo-pad);border-radius:3px}
+.masthead .logo:focus-visible{outline:2px solid var(--within);outline-offset:4px}
+.logo img{display:block;width:232px;height:auto}
+.masthead .title{grid-column:2;grid-row:1;min-width:0}
+.masthead .standfirst,.masthead .toc{grid-column:1 / -1}
+.masthead .standfirst{margin-top:22px}
+.masthead .toc{margin-top:20px}
+@media (max-width:700px){
+  .masthead{grid-template-columns:1fr auto;gap:0}
+  .masthead .logo{grid-column:1;grid-row:1;margin-bottom:18px}
+  .theme-btn{grid-column:2;grid-row:1}
+  .masthead .title{grid-column:1 / -1;grid-row:2}
+  .logo img{width:176px}
+}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.13em;
   text-transform:uppercase;color:var(--muted)}
-h1{font-family:var(--serif);font-weight:500;font-size:clamp(34px,5.4vw,54px);
-  line-height:1.03;letter-spacing:-.02em;margin:12px 0 0;text-wrap:balance}
-.standfirst{font-family:var(--serif);font-size:18.5px;line-height:1.5;
-  color:var(--ink-2);max-width:62ch;margin:14px 0 0}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5.2vw,52px);
+  line-height:1.04;letter-spacing:-.03em;margin:0;text-wrap:balance}
+.standfirst{font-family:var(--display);font-weight:400;font-size:18px;line-height:1.5;
+  color:var(--ink-2);margin:14px 0 0}
 section{margin:40px 0 0}
 .sec-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
   border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:16px}
-h2{font-family:var(--serif);font-weight:500;font-size:26px;letter-spacing:-.015em;margin:0}
+h2{font-family:var(--display);font-weight:600;font-size:25px;letter-spacing:-.02em;margin:0}
 .sec-head .role{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;
   text-transform:uppercase;color:var(--muted);margin-left:auto}
-.note{max-width:68ch;color:var(--ink-2);margin:0 0 18px;font-size:14.5px}
+.note{color:var(--ink-2);margin:0 0 18px;font-size:14.5px}
 .note strong{color:var(--ink);font-weight:600}
 
 .controls{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;
@@ -91,16 +120,53 @@ svg{display:block;overflow:visible}
   letter-spacing:-.02em;line-height:1.15}
 .stat span{font-family:var(--mono);font-size:10px;letter-spacing:.07em;
   text-transform:uppercase;color:var(--muted)}
+.iso-row{display:grid;grid-template-columns:190px auto 1fr;align-items:center;gap:0 16px;
+  min-height:34px}
+.iso-row .lab{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iso-row .ab{display:none;font-family:var(--mono)}
+.people{display:flex;gap:3px}
+.ic{width:13px;height:21px;display:block}
+.ic.miss{fill:var(--beyond)} .ic.met{fill:var(--axis)}
+.iso-row .val{font-size:13px;white-space:nowrap}
+.iso-row .val b{font-family:var(--mono);font-weight:600;font-size:15px}
+.iso-row .val .sub{font-family:var(--mono);color:var(--muted);font-size:11px;margin-left:8px}
+@media (max-width:560px){
+  .iso-row{grid-template-columns:44px auto 1fr}
+  .iso-row .full{display:none} .iso-row .ab{display:inline}
+  .iso-row .val .sub{display:block;margin:0}
+}
+.toc{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--mono);
+  font-size:14px;letter-spacing:.02em}
+.toc a{color:var(--within);text-decoration:none;border-bottom:1px solid var(--within);padding-bottom:1px}
+.toc a:hover{color:var(--ink);border-color:var(--ink)}
+.toc a:focus-visible{outline:2px solid var(--within);outline-offset:3px}
+section[id]{scroll-margin-top:16px}
+.note a,footer a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--axis);text-underline-offset:2px}
+.note a:hover,footer a:hover{text-decoration-color:var(--ink)}
+.note code{font-family:var(--mono);font-size:12.5px}
+.limits{margin:0;padding-left:20px;color:var(--ink-2);font-size:14.5px}
+.limits li{margin-bottom:9px}
+.limits b{color:var(--ink)}
+.zz-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px 40px}
+@media (max-width:820px){.zz-cols{grid-template-columns:1fr}}
+.zz-prov{font-family:var(--sans);font-size:13.5px;font-weight:600;fill:var(--ink)}
+.zz-sum{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+.zz-yr{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.zz-val{font-family:var(--mono);font-size:10.5px;fill:var(--ink);font-weight:500;
+  paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.zz-tick{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.hit{fill:transparent;pointer-events:all;outline:none}
+.hit:focus-visible{stroke:var(--within);stroke-width:1.5}
 .tip{position:fixed;pointer-events:none;z-index:60;opacity:0;transition:opacity .1s;
   background:var(--ink);color:var(--plane);font-family:var(--mono);font-size:11px;
   line-height:1.55;padding:9px 12px;border-radius:3px;max-width:260px}
 .tip.on{opacity:1}
 .tip b{color:var(--plane);font-weight:600}
 .qbox{border-left:3px solid var(--beyond);background:var(--surface);padding:15px 20px;
-  margin:16px 0 0;font-size:14px;color:var(--ink-2);max-width:76ch}
+  margin:16px 0 0;font-size:14px;color:var(--ink-2)}
 .qbox b{color:var(--ink)}
 .winnote{border-left:3px solid var(--vol);background:var(--surface);padding:11px 16px;
-  font-size:13.5px;color:var(--ink-2);max-width:78ch;margin:0 0 14px}
+  font-size:13.5px;color:var(--ink-2);margin:0 0 14px}
 .qbox ul{margin:8px 0 0;padding-left:18px}
 .qbox li{margin-bottom:5px}
 .tblwrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
@@ -119,32 +185,66 @@ summary::before{content:"▸ ";color:var(--muted)}
 details[open] summary::before{content:"▾ "}
 summary:focus-visible{outline:2px solid var(--within);outline-offset:3px}
 footer{border-top:2px solid var(--ink);padding-top:18px;margin-top:44px;font-size:13px;
-  color:var(--ink-2);max-width:72ch}
+  color:var(--ink-2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
+<script>
+// Theme choice.
+(function(){ try {
+  const t = localStorage.getItem('theme');
+  if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+} catch (e) {} })();
+</script>
+
 <div class="wrap">
   <header class="masthead">
-    <div class="eyebrow" id="eyebrow">CIHI hip &amp; knee replacement</div>
-    <h1>The Benchmark Line</h1>
-    <p class="standfirst">One horizontal line at six months. Each province's bar runs from
-      its median patient to its unluckiest tenth. Where that bar crosses the line is the
-      finding.</p>
+    <a class="logo" href="https://gsipa.ca" aria-label="Global Student Innovation Platform Association — gsipa.ca">
+      <img src="assets/gsipa-logo.png" width="280" height="139"
+        alt="Global Student Innovation Platform Association (GSIPA)"></a>
+    <div class="title">
+      <h1>Hip &amp; Knee <span style="white-space:nowrap">Wait-Times</span> Index</h1>
+    </div>
+    <button type="button" class="theme-btn" id="theme-btn" aria-label="Switch to dark theme">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <p class="standfirst">This index uses three approaches to compare and analyze how long 
+      patients wait for a hip or knee replacement surgery in 10 provinces of Canada. In the first approach, 
+      every province's wait times for 2020-2025 are plotted as bars against a horizontal line representing the 6-month benchmark 
+      to represent how far the median and 90th percentile are from the benchmark as well as 
+      how much longer the slowest tenth waits in comparison to the median. 
+      The second comparison represents patients who waited past the benchmark time using 10 people icons for each province.   
+      Then the last graph shows the unpredictability in how much the 90th percentile changes over the years 2020-2025.
+      Every number used is sourced from CIHI &amp; StatCan's publicly published data, and is only arranged so it can be compared; nothing
+      is modelled.</p>
+    <nav class="toc" aria-label="Contents">Quick navigation links:
+      <a href="#benchmark">The benchmark line</a><a href="#tenths">Of every 10 patients</a><a href="#range">Same province, trend across wait times</a>
+      <a href="#method">Where the benchmark line came from</a><a href="#ratios">Two ways to read the benchmark</a>
+      <a href="#definitions">What each figure is</a><a href="#limitations">Limitations</a>
+      <a href="#data">Data Sources</a>
+    </nav>
   </header>
 
-  <section>
-    <div class="sec-head"><h2>Wait distribution against the benchmark</h2>
-      <span class="role">toggle years &amp; procedure</span></div>
-    <p class="note">Each bar runs from zero to that province's <strong>90th
-      percentile</strong>, banded by two tests at once: is this wait past the
-      <strong>median</strong>, and is it past the <strong>benchmark</strong>? Solid fills are
-      where the two agree — tint below both, orange above both. <strong>Hatching marks the
-      band where they disagree</strong>, and its colour says which way: orange hatch is past
-      the median but still inside six months, blue hatch is past six months but still inside
+  <section id="benchmark">
+    <div class="sec-head"><h2>The benchmark line</h2>
+      <span class="role">toggle window, procedure &amp; years</span></div>
+    <p class="note">In this graph, each bar runs from zero to that province's <strong>90th
+      percentile</strong>, banded by two tests at once: <strong>when</strong> did a province's <strong>wait-time pass the
+      median</strong> and reach the <strong>90th percentile</strong> relative to the benchmark, and 
+      <strong>how many times the benchmark</strong> does the slowest tenth have to wait? 
+
+      Solid fills represent percentiles — tint for 50th, orange for above 50th to 90th. Orange hatch is past
+      the median and still inside the six months benchmark, blue hatch is past six months but still has not reached
       the median. The label above each bar is the 90th percentile as a multiple of the
       benchmark. A bar with no solid orange would mean 90% of patients treated within six
-      months; <strong id="none-clear">no province manages it in any year</strong>.</p>
+      months; <strong id="none-clear">no province manages to achieve it in any year</strong>.</p>
 
     <div class="controls">
       <div class="cgroup"><label id="lab-win">Reporting window</label>
@@ -157,6 +257,8 @@ footer{border-top:2px solid var(--ink);padding-top:18px;margin-top:44px;font-siz
         <div class="chips" role="group" aria-labelledby="lab-sort" id="sort-chips"></div></div>
       <div class="cgroup"><label id="lab-vol">Volume strip</label>
         <div class="chips" role="group" aria-labelledby="lab-vol" id="vol-chips"></div></div>
+      <div class="cgroup"><label id="lab-unit">Time in</label>
+        <div class="chips" role="group" aria-labelledby="lab-unit" id="unit-chips"></div></div>
     </div>
 
     <p class="note" id="winnote" hidden></p>
@@ -170,7 +272,7 @@ footer{border-top:2px solid var(--ink);padding-top:18px;margin-top:44px;font-siz
         <span class="key"><i style="background:var(--vol)"></i>volume strip (own scale, shared columns)</span>
         <span class="key"><svg width="26" height="10" aria-hidden="true">
           <line x1="0" y1="5" x2="26" y2="5" stroke="var(--bench)" stroke-width="2"
-            stroke-dasharray="5 3"/></svg>benchmark, 182 days</span>
+            stroke-dasharray="5 3"/></svg><span id="leg-bench">benchmark, 182 days</span></span>
         <span class="key" style="color:var(--muted)">○ median &nbsp; ● 90th percentile
           &nbsp;·&nbsp; ×  = 90th as a multiple of the benchmark, on the most recent
           year shown (every bar when 1–2 years are selected)</span>
@@ -179,80 +281,174 @@ footer{border-top:2px solid var(--ink);padding-top:18px;margin-top:44px;font-siz
     <div class="stats" id="stats"></div>
   </section>
 
-  <section>
-    <div class="sec-head"><h2>Where the line came from</h2><span class="role">diagnostic</span></div>
-    <p class="note"><strong>CIHI states it as “6 months”</strong> for hip and knee
-      replacement, on its <em>Wait Times for Priority Procedures in Canada, 2025</em> page —
-      182 days. The data workbook itself never carries the figure; it publishes only
-      “% meeting benchmark”. So the line is drawn on the stated benchmark and then
-      <strong>checked against the data two ways</strong>, because a threshold we could not
-      verify is a threshold we could not defend.</p>
-    <p class="note"><strong>Check one — recover it.</strong> P50, P90 and the benchmark
-      column are three points on one cumulative distribution: the percentiles answer
-      <em>given a share, what wait?</em>, the benchmark column answers the inverse,
-      <em>given a wait, what share?</em> Interpolating between them recovers the threshold
-      each province's own published numbers imply. It lands at
-      <strong id="imp-med">—</strong> days.</p>
-    <p class="note"><strong>Check two — run it backwards.</strong> Predicting each province's
-      published “% meeting benchmark” from its own P50 and P90 reproduces CIHI's figure within
-      5 points in <strong id="bt-182">—</strong> province-years at 182 days (median error
-      <span id="bt-182-err">—</span> points). At 112 days it succeeds in
-      <strong id="bt-112">—</strong> (median error <span id="bt-112-err">—</span> points).
-      <span id="bt-win"></span></p>
-    <div class="qbox" style="border-left-color:var(--within);margin-bottom:16px">
-      <b>112 days is the cataract benchmark, not this one.</b> The same CIHI page reports
-      “cataract surgeries (69%) within the recommended 112 days”. Each priority procedure
-      carries its own benchmark — 112 days for cataract surgery, 28 days for radiation
-      therapy, 48 hours for hip fracture repair, 6 months for hip and knee replacement. The
-      182 days used here applies to hip and knee replacement only, and the backwards test
-      above rules out 112 for these two procedures on the published numbers alone, and it
-      does so in <em>both</em> reporting windows independently.
+  <section id="tenths">
+    <div class="sec-head"><h2>Of every 10 patients, how many waited past six months</h2>
+      <span class="role" id="iso-role">independent of the controls above</span></div>
+    <p class="note">CIHI's own “% meeting benchmark”, drawn as people: 
+      each row is that year's cases beyond the benchmark over all its cases.
+      <strong>Orange figures waited longer than six months.</strong> The reporting window,
+      procedure and year are chosen here, one year at a time; this section ignores the
+      controls above it. Figures are rounded to the nearest tenth; the exact share and
+      headcount sit beside each row. <strong id="iso-most">—</strong></p>
+    <div class="controls">
+      <div class="cgroup"><label id="lab-iso-win">Reporting window</label>
+        <div class="chips" role="group" aria-labelledby="lab-iso-win" id="iso-win-chips"></div></div>
+      <div class="cgroup"><label id="lab-iso-proc">Procedure</label>
+        <div class="chips" role="group" aria-labelledby="lab-iso-proc" id="iso-proc-chips"></div></div>
+      <div class="cgroup"><label id="lab-iso-year">Year</label>
+        <div class="chips" role="group" aria-labelledby="lab-iso-year" id="iso-year-chips"></div></div>
     </div>
-    <div class="stats" id="impstats" style="border-top:1px solid var(--rule)"></div>
-    <details>
-      <summary>Implied threshold by province — check the assumption</summary>
-      <div class="tblwrap"><table id="imptbl"></table></div>
-    </details>
-    <div class="qbox" style="border-left-color:var(--within)">
-      <b>The recovered figure is a diagnostic, not a published one.</b> 182 days is CIHI's
-      stated benchmark and is what the line is drawn on. The 186.7-day recovery is
-      corroboration — it depends on an interpolation assumption about the distribution's
-      shape between the two known percentiles, so it belongs in the methodology, never in a
-      headline. It is broken out per province below so the assumption can be checked rather
-      than trusted, and a province sitting far from the rest is worth a second look at its
-      submission.
+    <p class="note" id="iso-winnote" hidden></p>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="person" viewBox="0 0 20 32"><circle cx="10" cy="5.5" r="5"/>
+        <path d="M5 12.5h10a3 3 0 0 1 3 3V24h-3v8h-4v-8H9v8H5v-8H2V15.5a3 3 0 0 1 3-3z"/></symbol>
+    </svg>
+    <div class="plot"><div id="iso"></div>
+      <div class="legend">
+        <span class="key"><svg class="ic miss" aria-hidden="true"><use href="#person"/></svg>waited longer than the benchmark</span>
+        <span class="key"><svg class="ic met" aria-hidden="true"><use href="#person"/></svg>treated within it</span>
+      </div>
     </div>
   </section>
 
-  <section>
-    <div class="sec-head"><h2>Open question — which ratio?</h2><span class="role">needs your call</span></div>
-    <div class="qbox">
-      <b>“A ratio that shows how many surgeries are supposed to be done by the benchmark
-      time” reads two ways, and I've built both rather than pick one silently.</b>
-      <ul>
-        <li><b>Tail ratio — P90 ÷ benchmark.</b> How many times the benchmark the unluckiest
-          tenth actually waits. Saskatchewan hip 2025 = <b>2.47×</b>. This is a
-          <em>time</em> ratio and it's what the chart currently encodes.</li>
-        <li><b>Attainment — CIHI's published % meeting benchmark,</b> and its complement
-          turned into people. This is a <em>count</em> ratio: how many surgeries were
-          actually done inside the threshold versus how many should have been. It's in the
-          tooltips and the summary strip.</li>
-      </ul>
-      The second needs one thing I can't get from the workbook: the <b>target</b> share
-      (commonly 90% for hip and knee). The threshold in days was recoverable from the data;
-      a policy target is not. Tell me if you want that target on the chart and I'll need a
-      CIHI source for it — same rule as the 182 days.
+  <section id="range">
+    <div class="sec-head"><h2>Same province, trend across same-percentile wait times</h2>
+      <span class="role" id="rng-role">independent of the controls above</span></div>
+    <p class="note">For each province, this presents the <strong>trend of wait times posted across
+      every year of the chosen reporting window</strong>; the shortest and longest year carry
+      their case counts in the line under the province's name, and every year's count is a
+      hover away. The
+      first row of each block is a dot at that year's wait; every row after it runs from the
+      previous year's wait to the new one, with a chevron pointing the way it moved, so the
+      path zig-zags down the block.
+      The currently chosen wait is the
+      <strong id="rng-basis">90th percentile — the wait one patient in ten exceeded</strong>.
+      <span id="rng-why">That is the figure the benchmark is missed at, and where provinces
+      differ most; switch to the median for the typical patient.</span> The case count
+      matters because a small province's percentile is a handful of patients and moves
+      easily; hover a row for it. Provinces are ordered by the size of the gap between their
+      shortest and longest year, widest first, top to bottom, left column then right column on wide screens. <strong id="rng-note"></strong></p>
+    <div class="controls">
+      <div class="cgroup"><label id="lab-rng-win">Reporting window</label>
+        <div class="chips" role="group" aria-labelledby="lab-rng-win" id="rng-win-chips"></div></div>
+      <div class="cgroup"><label id="lab-rng-proc">Procedure</label>
+        <div class="chips" role="group" aria-labelledby="lab-rng-proc" id="rng-proc-chips"></div></div>
+      <div class="cgroup"><label id="lab-basis">Wait measured at</label>
+        <div class="chips" role="group" aria-labelledby="lab-basis" id="basis-chips"></div></div>
     </div>
+    <p class="note" id="rng-winnote" hidden></p>
+    <div class="plot"><div class="zz-cols" id="range-rows"></div>
+      <div class="legend" id="rng-legend"></div>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="sec-head"><h2>Where the benchmark line came from</h2><span class="role">method</span></div>
+    <p class="note"><strong>CIHI states the benchmark as “6 months”</strong> for hip and knee
+      replacement, on its <em>Wait Times for Priority Procedures in Canada, 2025</em> page —
+      182 days. The data workbook itself never carries the figure; it publishes only
+      “% meeting benchmark”. So the line is drawn on the stated benchmark.</p>
+    
+  </section>
+
+  <section id="ratios">
+    <div class="sec-head"><h3>Two ways to read the benchmark</h3><span class="role">definitions</span></div>
+    
+    <div class="qbox" style="border-left-color:var(--within);margin-bottom:12px">
+      <b>Tail ratio — the 90th percentile ÷ 182 days.</b> How many times the benchmark the
+      slowest tenth of patients actually waited. It is the label above each bar. A ratio of
+      2.5× means one patient in ten waited more than two and a half times six months.
+    </div>
+    <div class="qbox" style="border-left-color:var(--within)">
+      <b>Median attainment time.</b> The provinces with the 50th percentile of patients
+      treated within 182 days, and those that do not meet the benchmark even at the median.
+    </div>
+  </section>
+
+  <section id="definitions">
+    <div class="sec-head"><h3>What each figure is</h3><span class="role">definitions</span></div>
+    <div class="tblwrap"><table>
+      <thead><tr><th class="l">Figure</th><th class="l">Definition</th><th class="l">Source</th></tr></thead>
+      <tbody>
+        <tr><td class="pv">Median (P50)</td><td class="l">CIHI's reported 50th-percentile wait: half of patients waited less, half more</td><td class="l">CIHI Table 1</td></tr>
+        <tr><td class="pv">90th percentile (P90)</td><td class="l">CIHI's reported 90th-percentile wait: one patient in ten waited longer</td><td class="l">CIHI Table 1</td></tr>
+        <tr><td class="pv">% meeting benchmark</td><td class="l">CIHI's reported share of patients treated within 182 days</td><td class="l">CIHI Table 1</td></tr>
+        <tr><td class="pv">Cases beyond benchmark</td><td class="l">volume × (100 − % meeting benchmark) ÷ 100 — the percentage turned into people</td><td class="l">computed</td></tr>
+        <tr><td class="pv">Tail ratio</td><td class="l">P90 ÷ 182 — how many times the benchmark the slowest tenth waited</td><td class="l">computed</td></tr>
+        <tr><td class="pv">Volume</td><td class="l">CIHI's reported case count for the reporting window</td><td class="l">CIHI Table 1</td></tr>
+        <tr><td class="pv">Rate</td><td class="l">volume per 100,000 population aged 65+, July 1 estimate of the same year</td><td class="l">Statistics Canada 17-10-0005-01</td></tr>
+        <tr><td class="pv">Months</td><td class="l">days ÷ 30.44 (365.25 ÷ 12) — a display choice; every figure is stored in days</td><td class="l">computed</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note" style="margin-top:14px"><strong>Two reporting windows, never mixed.</strong>
+      CIHI's data year is April–September unless marked as a fiscal year (April–March) —
+      so a bare “2025” is a six-month count. April–September is the only window published
+      for all six years and is the default; the fiscal-year window runs 2020–2024 because
+      2025 had not closed at CIHI's publication. The toggle switches the chart in view, and a six-month
+      count is never doubled into an annual one.</p>
+  </section>
+
+  <section id="limitations">
+    <div class="sec-head"><h2>Limitations</h2><span class="role">read before quoting</span></div>
+    <ul class="limits">
+      <li><b>A description, not an explanation.</b> Nothing is adjusted, modelled or causal.
+        Where two provinces differ, the index establishes that they differ — not why. No
+        claim is made that any province's wait is caused by its volume, its population or
+        its policy.</li>
+      <!-- <li><b>The figures are self-reported.</b> Hip and knee results are aggregates
+        submitted by provincial ministries and agencies; CIHI harmonizes the reporting
+        format, not the underlying measurement. What starts the clock — the decision to
+        treat, the booking, or another point — is set by each province, and a gap between
+        two provinces may in part reflect that.</li> -->
+      <!-- <li><b>No confidence intervals.</b> CIHI publishes percentiles, not case-level data,
+        so none can be computed. A 141-case figure from Prince Edward Island prints with
+        the same authority as an 11,952-case one from Ontario; small-province figures are
+        inevitably less stable, and a single year's swing in a small province should be
+        read with that in mind.</li> -->
+      <!-- <li><b>Case mix is not controlled for.</b> The data carry nothing on age, comorbidity,
+        primary versus revision, urgency or triage. Any gap between provinces may be a
+        case-mix difference.</li> -->
+      <li><b>The default window is six months.</b> April–September figures are not annual
+        and are not annualized. Where fiscal-year rows exist, the half-year 90th percentile
+        differs from the full-year one by more than 30 days in 28 of 98 province-years.</li>
+      <li><b>This is throughput, not capacity.</b> A case count is what a province did, not what
+        it could do. It is shown only as a rate per 100,000 aged 65+ — a standardizing
+        device, since people under 65 also receive these procedures. More data could help develop 
+        an index of what procedures accomplished with x resources (surgeons, ORs, etc.) and y demand.</li>
+      <li><b>Territories are excluded</b>, as they are in CIHI's provincial reporting.
+        Recent population estimates are postcensal and subject to revision.</li>
+    </ul>
+  </section>
+
+  <section id="data">
+    <div class="sec-head"><h2>Data Sources</h2><span class="role">open</span></div>
+    <p class="note"><strong>Sources.</strong> 1) Canadian Institute for Health Information,
+      <em>Wait Times for Priority Procedures in Canada, 2008–2025 — Data Tables</em>,
+      Table 1, downloaded 18 July 2026 (<a href="https://www.cihi.ca/en/wait-times-for-priority-procedures-in-canada">cihi.ca</a>).
+      2) Statistics Canada, Table 17-10-0005-01, <em>Population estimates on July 1, by age and
+      gender</em>, downloaded 18 July 2026 (<a href="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000501">statcan.gc.ca</a>).</p>
+    <!-- <p class="note"><strong>Provenance.</strong> Every bar on this page carries the Table 1
+      row numbers it was built from — hover any bar to see them — and the master tables
+      behind the page are published as CSV with the same column, so any figure can be
+      checked against the workbook in a few seconds without running any code.</p>
+    <p class="note"><strong>Reproducibility.</strong> The raw files, the tables and the code
+      that builds this page are in the open repository at
+      <a href="https://github.com/mugis-rwill/ca-wait-index">github.com/mugis-rwill/ca-wait-index</a>.
+      The build is deterministic: one command regenerates this page byte for byte from the
+      two raw files.</p>
+    <p class="note"><strong>Why 2020 onward.</strong> CIHI's workbook reaches back to 2008,
+      but the pre-COVID and post-COVID periods behave as different systems — the ranking of
+      provinces by median wait is nearly unrelated across the two eras — and a series
+      spanning both would average two regimes and describe neither. The written analysis of
+      the reporting window and of these limitations is in the repository's
+      <code>docs/</code>.</p> -->
   </section>
 
   <footer>
-    <p style="margin:0 0 9px"><b>Benchmark drawn at 182 days</b> — CIHI's stated
-      6-month benchmark for hip and knee replacement, corroborated against the published
-      percentiles as described above. No confidence intervals — CIHI publishes aggregate percentiles submitted by
-      provinces, not case-level data.</p>
-    <p style="margin:0;color:var(--muted);font-size:12.5px">Source: CIHI Table 1, “Wait times
-      for priority procedures, by province and Canada, 2008 to 2025”, downloaded 18 July 2025.
-      April–September figures; not annualized.</p>
+    <p style="margin:0 0 9px"><b>Published by the Global Student Innovation Platform
+      Association (GSIPA)</b>, <a href="https://gsipa.ca">gsipa.ca</a>.</p>
+    <p style="margin:0 0 9px"><b>An independent, open-source index.</b> Not affiliated with,
+      endorsed by or reviewed by CIHI, Statistics Canada or any provincial ministry.</p>
   </footer>
 </div>
 <div class="tip" id="tip"></div>
@@ -264,9 +460,23 @@ const el = (n, a = {}) => { const e = document.createElementNS(NS, n);
   for (const k in a) e.setAttribute(k, a[k]); return e; };
 const tip = document.getElementById('tip');
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const txt = (x, y, str, cls, a = {}) => { const t = el('text', Object.assign({x, y, class: cls}, a));
+  t.textContent = str; return t; };
 const n0 = v => Math.round(v).toLocaleString();
 
-const state = { win: D.default_window, proc: 'Hip', sort: 'p90', vol: 'raw', years: null };
+const state = { win: D.default_window, proc: 'Hip', sort: 'p90', vol: 'raw', years: null,
+  unit: 'days',
+  // The people section and the range section each own their window, procedure
+  // and (for the people section) year, and never read the top controls.
+  iso: { win: D.default_window, proc: 'Hip', year: null },
+  rng: { win: D.default_window, proc: 'Hip', basis: 'p90' } };
+
+// Time is stored in days, as CIHI publishes it; the toggle changes only how it
+// is printed. 30.44 = 365.25 / 12, so a month is a calendar month, not 30 days.
+const MO = 30.44;
+const fmtT = d => state.unit === 'months' ? (d / MO).toFixed(1) : String(Math.round(d));
+const unitS = () => state.unit === 'months' ? 'mo' : 'd';
+const benchLabel = () => state.unit === 'months' ? '6 months' : `${D.benchmark} days`;
 const W_ = () => D.windows[state.win];
 state.years = new Set(W_().years);
 
@@ -387,14 +597,19 @@ function draw(){
   });
   svg.appendChild(defs);
 
-  for (let g = 0; g <= 900; g += 150){
+  // Gridlines every 150 days, or every 3 months -- 6 months then lands on a
+  // gridline, so the benchmark sits on the "6" when months are showing.
+  const ticks = state.unit === 'months'
+    ? Array.from({length: 10}, (_, i) => i * 3 * MO).filter(v => v <= maxDay)
+    : Array.from({length: 7}, (_, i) => i * 150);
+  ticks.forEach(g => {
     svg.appendChild(el('line', {x1: L, y1: y(g), x2: W - R, y2: y(g),
       stroke: 'var(--grid)', 'stroke-width': 1}));
     const t = el('text', {x: L - 8, y: y(g) + 3.5, 'text-anchor': 'end', class: 't-lab'});
-    t.textContent = g; svg.appendChild(t);
-  }
+    t.textContent = state.unit === 'months' ? Math.round(g / MO) : g; svg.appendChild(t);
+  });
   const ylab = el('text', {x: L - 8, y: 11, 'text-anchor': 'end', class: 't-lab'});
-  ylab.textContent = 'days'; svg.appendChild(ylab);
+  ylab.textContent = state.unit === 'months' ? 'months' : 'days'; svg.appendChild(ylab);
 
   // Wide bars carry a ratio label each; narrow ones would collide, so only the
   // most recent selected year is labelled and the legend says so.
@@ -471,7 +686,7 @@ function draw(){
         fill: 'transparent'}));
 
       hookTip(g, `<b>${esc(prov)}</b> · ${esc(state.proc)}, ${yr}<br>
-        median <b>${r.p50}</b> d &nbsp; 90th <b>${r.p90}</b> d<br>
+        median <b>${fmtT(r.p50)}</b> ${unitS()} &nbsp; 90th <b>${fmtT(r.p90)}</b> ${unitS()}<br>
         tail ratio <b>${r.tail_ratio}×</b> the benchmark<br>
         ${r.bench_pct}% met benchmark<br>
         <b>${n0(r.missed_cases)}</b> of ${n0(r.volume)} cases beyond it<br>
@@ -493,7 +708,7 @@ function draw(){
   bl.textContent = 'benchmark';
   svg.appendChild(bl);
   const bl2 = el('text', {x: W - R + 8, y: by + 12, 'text-anchor': 'start', class: 't-lab'});
-  bl2.textContent = `${D.benchmark} days`;
+  bl2.textContent = benchLabel();
   svg.appendChild(bl2);
 
   svg.appendChild(el('line', {x1: L, y1: y(0), x2: W - R, y2: y(0),
@@ -573,12 +788,148 @@ function stats(){
     [n0(missed), 'cases beyond benchmark'],
     [(missed / vol * 100).toFixed(1) + '%', 'of ' + n0(vol) + ' cases'],
     [under + ' / ' + rows.length, 'province-years fully within'],
-    [worst.abbr + ' ' + worst.year, 'longest tail (' + worst.p90 + ' d)'],
+    [worst.abbr + ' ' + worst.year, 'longest tail (' + fmtT(worst.p90) + ' ' + unitS() + ')'],
     [(rows.reduce((s, r) => s + r.tail_ratio, 0) / rows.length).toFixed(2) + '×',
      'mean tail ratio'],
   ];
   host.innerHTML = cells.map(([v, l]) =>
     `<div class="stat"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('');
+}
+
+// CIHI's published attainment as people, one row per province. The share is
+// missed cases over cases, both summed across the selected years, so it is
+// volume-weighted exactly as the summary strip is; the icons round it to tenths
+// and the exact figure is printed beside them so the rounding hides nothing.
+function drawIso(){
+  const host = document.getElementById('iso');
+  const I = state.iso, IW = D.windows[I.win];
+  if (!IW.years.includes(I.year)) I.year = Math.max(...IW.years);
+  const rows = IW.rows.filter(r => r.procedure === I.proc && r.year === I.year);
+  const wn = document.getElementById('iso-winnote');
+  if (wn){ wn.hidden = !IW.note; wn.textContent = IW.note || ''; wn.className = 'winnote'; }
+  if (!rows.length){ host.innerHTML = ''; set('iso-most', ''); set('iso-role', ''); return; }
+  const by = {};
+  rows.forEach(r => {
+    const a = by[r.province] || (by[r.province] = {abbr: r.abbr, missed: 0, vol: 0});
+    a.missed += r.missed_cases; a.vol += r.volume;
+  });
+  const list = Object.entries(by)
+    .map(([province, a]) => ({province, ...a, share: a.missed / a.vol}))
+    .sort((a, b) => b.share - a.share);
+  const icon = cls => `<svg class="ic ${cls}" aria-hidden="true"><use href="#person"/></svg>`;
+  host.innerHTML = list.map(s => {
+    const k = Math.round(s.share * 10);
+    return `<div class="iso-row">
+      <div class="lab"><span class="full">${esc(s.province)}</span><span class="ab">${esc(s.abbr)}</span></div>
+      <div class="people" role="img" aria-label="${k} of 10 waited longer than the benchmark">${
+        icon('miss').repeat(k)}${icon('met').repeat(10 - k)}</div>
+      <div class="val"><b>${k}</b> of 10<span class="sub">${(s.share * 100).toFixed(0)}% · ${
+        n0(s.missed)} people</span></div></div>`;
+  }).join('');
+  const span = String(I.year);
+  const most = list.filter(s => s.share > .5).length, proc = I.proc.toLowerCase();
+  set('iso-role', `${I.proc} · ${IW.label} · ${span}`);
+  set('iso-most', most === 0
+    ? `No province missed for most of its ${proc} patients in ${span}.`
+    : `In ${most} of ${list.length} provinces, most ${proc} patients in ${span} waited longer than the benchmark.`);
+}
+
+// "2020–2025" when the selected years run unbroken, "2020, 2023" when not.
+function yearSpan(){
+  const yrs = [...state.years].sort((a, b) => a - b);
+  const contiguous = yrs.every((y, i) => !i || y === yrs[i - 1] + 1);
+  return yrs.length === 1 ? String(yrs[0])
+    : contiguous ? `${yrs[0]}–${yrs[yrs.length - 1]}` : yrs.join(', ');
+}
+
+// One block per province, one row per year. Row i draws the move from year i-1
+// to year i, so every row starts directly under the dot above it and the path
+// zig-zags down the block. Same 900-day scale as the chart, so the pictures agree.
+const ZZ = {l: 44, r: 54, rowH: 18, maxDay: 900};
+function zzBlock(host, s, Wd, key){
+  const yrs = s.rows, n = yrs.length;
+  const t = 42, b = 10, pw = Wd - ZZ.l - ZZ.r, H = t + n * ZZ.rowH + b;
+  const x = v => ZZ.l + v / ZZ.maxDay * pw;
+  const svg = el('svg', {viewBox: `0 0 ${Wd} ${H}`, width: Wd, height: H, role: 'img',
+    'aria-label': `${s.province}: ${key === 'p90' ? '90th percentile' : 'median'} wait by year`});
+  svg.appendChild(txt(0, 13, s.province, 'zz-prov'));
+  const lo = yrs.reduce((a, r) => r[key] < a[key] ? r : a, yrs[0]);
+  const hi = yrs.reduce((a, r) => r[key] > a[key] ? r : a, yrs[0]);
+  svg.appendChild(txt(0, 28, `low ${fmtT(lo[key])} ${unitS()} (${lo.year}, ${n0(lo.volume)} cases) · high ${fmtT(hi[key])} ${unitS()} (${hi.year}, ${n0(hi.volume)} cases)`, 'zz-sum'));
+  svg.appendChild(el('line', {x1: x(D.benchmark), x2: x(D.benchmark), y1: t - 6, y2: H - b + 2,
+    stroke: 'var(--bench)', 'stroke-width': 1.2, 'stroke-dasharray': '4 3', opacity: .8}));
+  yrs.forEach((r, i) => {
+    const yc = t + i * ZZ.rowH + ZZ.rowH / 2, cur = x(r[key]);
+    svg.appendChild(txt(ZZ.l - 8, yc + 3.5, r.year, 'zz-yr', {'text-anchor': 'end'}));
+    let color = 'var(--ink-2)', dir = 0, prev = null;
+    if (i){
+      prev = yrs[i - 1]; const d = r[key] - prev[key]; dir = Math.sign(d);
+      color = d > 0 ? 'var(--beyond)' : d < 0 ? 'var(--within)' : 'var(--vol)';
+      const x0 = x(prev[key]);
+      svg.appendChild(el('line', {x1: x0, x2: cur, y1: yc, y2: yc, stroke: color, 'stroke-width': 2, 'stroke-linecap': 'round'}));
+      if (Math.abs(cur - x0) > 14){
+        const mid = (x0 + cur) / 2, k = dir >= 0 ? -1 : 1;    // chevron points along the move
+        svg.appendChild(el('path', {d: `M${mid + 4 * k},${yc - 3.5} L${mid},${yc} L${mid + 4 * k},${yc + 3.5}`,
+          fill: 'none', stroke: color, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}));
+      }
+    }
+    svg.appendChild(el('circle', {cx: cur, cy: yc, r: 3.6, fill: color, stroke: 'var(--surface)', 'stroke-width': 1.5}));
+    const right = dir >= 0;
+    svg.appendChild(txt(cur + (right ? 8 : -8), yc + 3.5, fmtT(r[key]), 'zz-val', {'text-anchor': right ? 'start' : 'end'}));
+    const hit = el('rect', {x: 0, y: yc - ZZ.rowH / 2, width: Wd, height: ZZ.rowH, class: 'hit', tabindex: 0});
+    hookTip(hit, `<b>${esc(s.province)} · ${r.year}</b><br>${key === 'p90' ? '90th percentile' : 'median'} <b>${fmtT(r[key])}</b> ${unitS()}` +
+      (prev ? ` &nbsp;(${r[key] - prev[key] > 0 ? '+' : ''}${fmtT(r[key] - prev[key])} vs ${prev.year})` : '') +
+      `<br>${n0(r.volume)} cases<br><span style="opacity:.6">Table 1 rows ${esc(r.rows)}</span>`);
+    svg.appendChild(hit);
+  });
+  host.appendChild(svg);
+}
+function zzAxis(host, Wd){
+  const pw = Wd - ZZ.l - ZZ.r, x = v => ZZ.l + v / ZZ.maxDay * pw;
+  const svg = el('svg', {viewBox: `0 0 ${Wd} 18`, width: Wd, height: 18, 'aria-hidden': 'true'});
+  const ticks = state.unit === 'months'
+    ? Array.from({length: 10}, (_, i) => i * 3 * MO).filter(v => v <= ZZ.maxDay)
+    : [0, 150, 300, 450, 600, 750, 900];
+  ticks.filter(g => Math.abs(x(g) - x(D.benchmark)) > 30)      // keep clear of the benchmark label
+    .forEach(g => svg.appendChild(txt(x(g), 12, state.unit === 'months' ? Math.round(g / MO) : g, 'zz-tick', {'text-anchor': 'middle'})));
+  svg.appendChild(txt(x(D.benchmark), 12, state.unit === 'months' ? '6 mo' : '182', 'zz-tick',
+    {'text-anchor': 'middle', style: 'fill:var(--ink);font-weight:500'}));
+  host.appendChild(svg);
+}
+function drawRange(){
+  const host = document.getElementById('range-rows');
+  const R = state.rng, RW = D.windows[R.win], key = R.basis;
+  const rows = RW.rows.filter(r => r.procedure === R.proc);
+  host.innerHTML = '';
+  if (!rows.length){ set('rng-role', ''); set('rng-note', ''); return; }
+  const by = {};
+  rows.forEach(r => (by[r.province] = by[r.province] || []).push(r));
+  const list = Object.entries(by).map(([province, rs]) => {
+    rs.sort((a, b) => a.year - b.year); const v = rs.map(r => r[key]);
+    return {province, rows: rs, gap: Math.max(...v) - Math.min(...v)};
+  }).sort((a, b) => b.gap - a.gap);
+  const two = host.clientWidth > 700, colW = Math.max(300, two ? (host.clientWidth - 40) / 2 : host.clientWidth);
+  const c1 = document.createElement('div'), c2 = document.createElement('div');
+  host.appendChild(c1); if (two) host.appendChild(c2);
+  zzAxis(c1, colW); if (two) zzAxis(c2, colW);
+  list.forEach((s, i) => { const bl = document.createElement('div');
+    zzBlock(bl, s, colW, key); (two && i >= Math.ceil(list.length / 2) ? c2 : c1).appendChild(bl); });
+
+  const sw = c => `<svg width="30" height="10" aria-hidden="true"><line x1="2" y1="5" x2="24" y2="5" stroke="${c}" stroke-width="2"/><path d="M15,1.5 L19,5 L15,8.5" fill="none" stroke="${c}" stroke-width="2"/><circle cx="26" cy="5" r="3" fill="${c}"/></svg>`;
+  const bench = `<span class="key"><svg width="26" height="10" aria-hidden="true"><line x1="0" y1="5" x2="26" y2="5" stroke="var(--bench)" stroke-width="1.5" stroke-dasharray="5 3"/></svg>benchmark, ${benchLabel()}</span>`;
+  document.getElementById('rng-legend').innerHTML =
+    `<span class="key">${sw('var(--beyond)')}wait got longer than the year before</span><span class="key">${sw('var(--within)')}wait got shorter</span><span class="key">${sw('var(--vol)')}unchanged</span>${bench}<span class="key" style="color:var(--muted)">first year: a dot only · same scale as the chart above</span>`;
+
+  const p90 = key === 'p90', yrs = RW.years;
+  set('rng-role', `${R.proc} · ${RW.label} · ${yrs[0]}–${yrs[yrs.length - 1]} · ${p90 ? '90th percentile' : 'median'}`);
+  const wn = document.getElementById('rng-winnote');
+  if (wn){ wn.hidden = !RW.note; wn.textContent = RW.note || ''; wn.className = 'winnote'; }
+  set('rng-basis', p90 ? '90th percentile — the wait one patient in ten exceeded'
+                       : 'median — the wait half of all patients exceeded');
+  set('rng-why', p90
+    ? 'That is the figure the benchmark is missed at, and where provinces differ most; switch to the median for the typical patient.'
+    : 'That is the typical patient; switch to the 90th percentile for the tail, where the benchmark is missed.');
+  set('rng-note', '');
 }
 
 function render(){
@@ -610,10 +961,36 @@ function render(){
     [{label: 'cases', value: 'raw'}, {label: 'per 100k 65+', value: 'rate'},
      {label: 'hide', value: 'off'}],
     v => state.vol === v, v => { state.vol = v; });
+  chips(document.getElementById('unit-chips'),
+    [{label: 'days', value: 'days'}, {label: 'months', value: 'months'}],
+    v => state.unit === v, v => { state.unit = v; });
+  const IW = D.windows[state.iso.win];
+  if (!IW.years.includes(state.iso.year)) state.iso.year = Math.max(...IW.years);
+  chips(document.getElementById('iso-win-chips'),
+    Object.values(D.windows).map(w => ({label: w.label, value: w.key})),
+    v => state.iso.win === v, v => { state.iso.win = v; });
+  chips(document.getElementById('iso-proc-chips'),
+    [{label: 'Hip', value: 'Hip'}, {label: 'Knee', value: 'Knee'}],
+    v => state.iso.proc === v, v => { state.iso.proc = v; });
+  chips(document.getElementById('iso-year-chips'),
+    IW.years.map(y => ({label: String(y), value: y})),
+    v => state.iso.year === v, v => { state.iso.year = v; });
+  chips(document.getElementById('rng-win-chips'),
+    Object.values(D.windows).map(w => ({label: w.label, value: w.key})),
+    v => state.rng.win === v, v => { state.rng.win = v; });
+  chips(document.getElementById('rng-proc-chips'),
+    [{label: 'Hip', value: 'Hip'}, {label: 'Knee', value: 'Knee'}],
+    v => state.rng.proc === v, v => { state.rng.proc = v; });
+  chips(document.getElementById('basis-chips'),
+    [{label: '90th percentile', value: 'p90'}, {label: 'median', value: 'p50'}],
+    v => state.rng.basis === v, v => { state.rng.basis = v; });
   draw();
   if (state.vol === 'off') document.getElementById('volstrip').innerHTML = '';
   else drawVolume();
   stats();
+  drawIso();
+  drawRange();
+  set('leg-bench', 'benchmark, ' + benchLabel());
   windowCopy();
 }
 
@@ -629,11 +1006,7 @@ const set = (id, value, html) => {
 };
 
 function windowCopy(){
-  const w = W_(), bt = w.backtest;
-  set('eyebrow',
-    `CIHI hip &amp; knee replacement · ${esc(w.long)} · ${w.years[0]}–${w.years[w.years.length-1]}`,
-    true);
-
+  const w = W_();
   const note = document.getElementById('winnote');
   if (note){
     if (w.note){ note.className = 'winnote'; note.textContent = w.note; note.hidden = false; }
@@ -641,34 +1014,39 @@ function windowCopy(){
   }
 
   set('none-clear', w.fully_within === 0
-    ? 'no province manages it in any year'
+    ? 'no province manages to achieve it in any year'
     : `${w.fully_within} of ${w.n_rows} province-years manage it`);
 
-  set('imp-med', w.implied.median);
-  set('bt-182', `${bt.b182.within5} of ${bt.b182.n}`);
-  set('bt-182-err', bt.b182.median_err);
-  set('bt-112', `${bt.b112.within5} of ${bt.b112.n}`);
-  set('bt-112-err', bt.b112.median_err);
-  set('bt-win', `Figures shown are for the ${w.long.toLowerCase()} window.`);
-
-  set('impstats', [
-    [w.implied.median + ' d', 'median implied threshold'],
-    [(w.implied.cv * 100).toFixed(1) + '%', 'coefficient of variation'],
-    [w.implied.n, 'province-years usable'],
-    [D.benchmark + ' d', 'line drawn at'],
-  ].map(([v, l]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join(''),
-    true);
-
-  set('imptbl',
-    `<thead><tr><th class="l">Province</th><th>Province-years used</th>
-      <th>Median implied threshold (days)</th></tr></thead><tbody>${
-    w.implied.by_province.slice().sort((a, b) => a.median - b.median).map(r => `<tr>
-      <td class="pv">${esc(r.province)}</td><td>${r.count}</td>
-      <td><b>${r.median}</b></td></tr>`).join('')}</tbody>`,
-    true);
 }
 
+// The theme button stands outside render(): it changes the page's colours, not
+// its data, so it never redraws the charts. Until the visitor clicks it, the page
+// follows the OS setting; after that, the choice is remembered in this browser.
+(function themeButton(){
+  const btn = document.getElementById('theme-btn');
+  const mq = matchMedia('(prefers-color-scheme: dark)');
+  const current = () => document.documentElement.getAttribute('data-theme') || (mq.matches ? 'dark' : 'light');
+  const paint = () => {
+    const t = current();
+    btn.dataset.mode = t;
+    btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  };
+  btn.addEventListener('click', () => {
+    const t = current() === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('theme', t); } catch (e) {}
+    paint();
+  });
+  mq.addEventListener('change', paint);
+  paint();
+})();
+
 render();
+let zzW = 0;
+new ResizeObserver(() => {
+  const w = document.getElementById('range-rows').clientWidth;
+  if (w !== zzW){ zzW = w; requestAnimationFrame(drawRange); }
+}).observe(document.getElementById('range-rows'));
 </script>
 </body>
 </html>
