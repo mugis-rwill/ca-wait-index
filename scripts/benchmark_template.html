@@ -91,6 +91,8 @@ svg{display:block;overflow:visible}
 .qbox{border-left:3px solid var(--beyond);background:var(--surface);padding:15px 20px;
   margin:16px 0 0;font-size:14px;color:var(--ink-2);max-width:76ch}
 .qbox b{color:var(--ink)}
+.winnote{border-left:3px solid var(--vol);background:var(--surface);padding:11px 16px;
+  font-size:13.5px;color:var(--ink-2);max-width:78ch;margin:0 0 14px}
 .qbox ul{margin:8px 0 0;padding-left:18px}
 .qbox li{margin-bottom:5px}
 .tblwrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
@@ -115,7 +117,7 @@ footer{border-top:2px solid var(--ink);padding-top:18px;margin-top:44px;font-siz
 
 <div class="wrap">
   <header class="masthead">
-    <div class="eyebrow">CIHI hip &amp; knee replacement · April–September · 2020–2025</div>
+    <div class="eyebrow" id="eyebrow">CIHI hip &amp; knee replacement</div>
     <h1>The Benchmark Line</h1>
     <p class="standfirst">One horizontal line at six months. Each province's bar runs from
       its median patient to its unluckiest tenth. Where that bar crosses the line is the
@@ -133,19 +135,22 @@ footer{border-top:2px solid var(--ink);padding-top:18px;margin-top:44px;font-siz
       the median but still inside six months, blue hatch is past six months but still inside
       the median. The label above each bar is the 90th percentile as a multiple of the
       benchmark. A bar with no solid orange would mean 90% of patients treated within six
-      months; <strong>no province manages it in any year</strong>.</p>
+      months; <strong id="none-clear">no province manages it in any year</strong>.</p>
 
     <div class="controls">
+      <div class="cgroup"><label id="lab-win">Reporting window</label>
+        <div class="chips" role="group" aria-labelledby="lab-win" id="win-chips"></div></div>
       <div class="cgroup"><label id="lab-proc">Procedure</label>
         <div class="chips" role="group" aria-labelledby="lab-proc" id="proc-chips"></div></div>
       <div class="cgroup"><label id="lab-year">Years shown</label>
         <div class="chips" role="group" aria-labelledby="lab-year" id="year-chips"></div></div>
-      <div class="cgroup"><label id="lab-sort">Order by</label>
+      <div class="cgroup"><label id="lab-sort">Order by, smallest first</label>
         <div class="chips" role="group" aria-labelledby="lab-sort" id="sort-chips"></div></div>
       <div class="cgroup"><label id="lab-vol">Volume strip</label>
         <div class="chips" role="group" aria-labelledby="lab-vol" id="vol-chips"></div></div>
     </div>
 
+    <p class="note" id="winnote" hidden></p>
     <div class="plot"><div id="chart"></div>
       <div id="volstrip"></div>
       <div class="legend">
@@ -177,19 +182,22 @@ footer{border-top:2px solid var(--ink);padding-top:18px;margin-top:44px;font-siz
       column are three points on one cumulative distribution: the percentiles answer
       <em>given a share, what wait?</em>, the benchmark column answers the inverse,
       <em>given a wait, what share?</em> Interpolating between them recovers the threshold
-      each province's own published numbers imply. It lands at 186.7 days.</p>
+      each province's own published numbers imply. It lands at
+      <strong id="imp-med">—</strong> days.</p>
     <p class="note"><strong>Check two — run it backwards.</strong> Predicting each province's
       published “% meeting benchmark” from its own P50 and P90 reproduces CIHI's figure within
-      5 points in <strong>100 of 120</strong> province-years at 182 days (median error 1.6
-      points). At 112 days it succeeds in <strong>0 of 120</strong> (median error 22.2
-      points).</p>
+      5 points in <strong id="bt-182">—</strong> province-years at 182 days (median error
+      <span id="bt-182-err">—</span> points). At 112 days it succeeds in
+      <strong id="bt-112">—</strong> (median error <span id="bt-112-err">—</span> points).
+      <span id="bt-win"></span></p>
     <div class="qbox" style="border-left-color:var(--within);margin-bottom:16px">
       <b>112 days is the cataract benchmark, not this one.</b> The same CIHI page reports
       “cataract surgeries (69%) within the recommended 112 days”. Each priority procedure
       carries its own benchmark — 112 days for cataract surgery, 28 days for radiation
       therapy, 48 hours for hip fracture repair, 6 months for hip and knee replacement. The
       182 days used here applies to hip and knee replacement only, and the backwards test
-      above rules out 112 for these two procedures on the published numbers alone.
+      above rules out 112 for these two procedures on the published numbers alone, and it
+      does so in <em>both</em> reporting windows independently.
     </div>
     <div class="stats" id="impstats" style="border-top:1px solid var(--rule)"></div>
     <details>
@@ -249,7 +257,21 @@ const tip = document.getElementById('tip');
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const n0 = v => Math.round(v).toLocaleString();
 
-const state = { proc: 'Hip', years: new Set(D.years), sort: 'p90', vol: 'raw' };
+const state = { win: D.default_window, proc: 'Hip', sort: 'p90', vol: 'raw', years: null };
+const W_ = () => D.windows[state.win];
+state.years = new Set(W_().years);
+
+// Switching window changes which years exist -- fiscal year stops at 2024,
+// because 2025FY had not closed when CIHI published. Keep whatever the reader
+// already chose where it still exists, and fall back to the whole window rather
+// than to an empty chart.
+function setWindow(key){
+  if (key === state.win) return;
+  state.win = key;
+  const avail = W_().years;
+  const kept = [...state.years].filter(y => avail.includes(y));
+  state.years = new Set(kept.length ? kept : avail);
+}
 
 function hookTip(node, html){
   const show = ev => { tip.innerHTML = html; tip.classList.add('on');
@@ -276,7 +298,7 @@ function chips(host, items, isOn, onClick){
 }
 
 function activeRows(){
-  return D.rows.filter(r => r.procedure === state.proc && state.years.has(r.year));
+  return W_().rows.filter(r => r.procedure === state.proc && state.years.has(r.year));
 }
 
 // Geometry shared by the chart and the volume strip beneath it. Both read the
@@ -284,12 +306,24 @@ function activeRows(){
 // exactly above its counterpart in the other -- which is what makes the
 // comparison honest without a second y-axis.
 function layout(){
-  const years = D.years.filter(y => state.years.has(y));
+  const years = W_().years.filter(y => state.years.has(y));
   const rows = activeRows();
   if (!rows.length || !years.length) return null;
 
   const newest = Math.max(...years);
+
+  // Volume ordering totals EVERY year in the data, not just the selected ones,
+  // so the axis holds still while years are toggled: the bars change, the
+  // province order does not. The wait-based orderings deliberately do follow the
+  // selection -- "slowest in 2025" is a different question from "slowest in
+  // 2021" and the axis should say so.
+  const totalVol = {};
+  W_().rows.filter(r => r.procedure === state.proc).forEach(r => {
+    totalVol[r.province] = (totalVol[r.province] || 0) + r.volume;
+  });
+
   const keyOf = p => {
+    if (state.sort === 'vol') return totalVol[p] ?? 1e12;
     const r = rows.find(x => x.province === p && x.year === newest)
            || rows.filter(x => x.province === p).slice(-1)[0];
     if (!r) return 1e9;
@@ -469,7 +503,7 @@ function drawVolume(){
 
   const raw = state.vol === 'raw';
   const valOf = r => raw ? r.volume : r.rate;
-  const unit = raw ? 'raw volume' : 'population-adjusted';
+  const unit = raw ? 'raw volume' : W_().rate_unit;
   const H = 132, T = 22, B = 20;
   const max = Math.max(...rows.map(valOf)) * 1.08 || 1;
   const y = v => T + (1 - v / max) * (H - T - B);
@@ -539,16 +573,20 @@ function stats(){
 }
 
 function render(){
+  chips(document.getElementById('win-chips'),
+    Object.values(D.windows).map(w => ({label: w.label, value: w.key})),
+    v => state.win === v, v => setWindow(v));
   chips(document.getElementById('proc-chips'),
     [{label: 'Hip', value: 'Hip'}, {label: 'Knee', value: 'Knee'}],
     v => state.proc === v, v => { state.proc = v; });
+  const winYears = W_().years;
   chips(document.getElementById('year-chips'),
-    D.years.map(y => ({label: String(y), value: y})).concat([{label: 'all', value: 'all'}]),
-    v => v === 'all' ? state.years.size === D.years.length : state.years.has(v),
+    winYears.map(y => ({label: String(y), value: y})).concat([{label: 'all', value: 'all'}]),
+    v => v === 'all' ? state.years.size === winYears.length : state.years.has(v),
     v => {
       if (v === 'all'){
-        if (state.years.size === D.years.length) state.years = new Set([Math.max(...D.years)]);
-        else state.years = new Set(D.years);
+        if (state.years.size === winYears.length) state.years = new Set([Math.max(...winYears)]);
+        else state.years = new Set(winYears);
         return;
       }
       if (state.years.has(v)){ if (state.years.size > 1) state.years.delete(v); }
@@ -556,7 +594,8 @@ function render(){
     });
   chips(document.getElementById('sort-chips'),
     [{label: '90th percentile', value: 'p90'}, {label: 'median', value: 'p50'},
-     {label: '% benchmark', value: 'bench'}],
+     {label: '% benchmark', value: 'bench'},
+     {label: 'volume · all years', value: 'vol'}],
     v => state.sort === v, v => { state.sort = v; });
   chips(document.getElementById('vol-chips'),
     [{label: 'cases', value: 'raw'}, {label: 'per 100k 65+', value: 'rate'},
@@ -566,21 +605,59 @@ function render(){
   if (state.vol === 'off') document.getElementById('volstrip').innerHTML = '';
   else drawVolume();
   stats();
+  windowCopy();
 }
 
-document.getElementById('impstats').innerHTML = [
-  [D.implied.median + ' d', 'median implied threshold'],
-  [(D.implied.cv * 100).toFixed(1) + '%', 'coefficient of variation'],
-  [D.implied.n, 'province-years usable'],
-  [D.benchmark + ' d', 'line drawn at'],
-].map(([v, l]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('');
+// Everything on the page that depends on which window is showing is set here,
+// from the payload, so the two windows can never disagree with the prose.
+// set() no-ops on a missing node instead of throwing. Without it one stale id
+// aborts the whole update partway and leaves the rest of the page showing the
+// other window's numbers -- which is worse than a blank, because it looks right.
+const set = (id, value, html) => {
+  const n = document.getElementById(id);
+  if (!n) { console.warn('windowCopy: no #' + id); return; }
+  if (html) n.innerHTML = value; else n.textContent = value;
+};
 
-document.getElementById('imptbl').innerHTML =
-  `<thead><tr><th class="l">Province</th><th>Province-years used</th>
-    <th>Median implied threshold (days)</th></tr></thead><tbody>${
-  D.implied.by_province.slice().sort((a, b) => a.median - b.median).map(r => `<tr>
-    <td class="pv">${esc(r.province)}</td><td>${r.count}</td>
-    <td><b>${r.median}</b></td></tr>`).join('')}</tbody>`;
+function windowCopy(){
+  const w = W_(), bt = w.backtest;
+  set('eyebrow',
+    `CIHI hip &amp; knee replacement · ${esc(w.long)} · ${w.years[0]}–${w.years[w.years.length-1]}`,
+    true);
+
+  const note = document.getElementById('winnote');
+  if (note){
+    if (w.note){ note.className = 'winnote'; note.textContent = w.note; note.hidden = false; }
+    else { note.hidden = true; }
+  }
+
+  set('none-clear', w.fully_within === 0
+    ? 'no province manages it in any year'
+    : `${w.fully_within} of ${w.n_rows} province-years manage it`);
+
+  set('imp-med', w.implied.median);
+  set('bt-182', `${bt.b182.within5} of ${bt.b182.n}`);
+  set('bt-182-err', bt.b182.median_err);
+  set('bt-112', `${bt.b112.within5} of ${bt.b112.n}`);
+  set('bt-112-err', bt.b112.median_err);
+  set('bt-win', `Figures shown are for the ${w.long.toLowerCase()} window.`);
+
+  set('impstats', [
+    [w.implied.median + ' d', 'median implied threshold'],
+    [(w.implied.cv * 100).toFixed(1) + '%', 'coefficient of variation'],
+    [w.implied.n, 'province-years usable'],
+    [D.benchmark + ' d', 'line drawn at'],
+  ].map(([v, l]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join(''),
+    true);
+
+  set('imptbl',
+    `<thead><tr><th class="l">Province</th><th>Province-years used</th>
+      <th>Median implied threshold (days)</th></tr></thead><tbody>${
+    w.implied.by_province.slice().sort((a, b) => a.median - b.median).map(r => `<tr>
+      <td class="pv">${esc(r.province)}</td><td>${r.count}</td>
+      <td><b>${r.median}</b></td></tr>`).join('')}</tbody>`,
+    true);
+}
 
 render();
 </script>

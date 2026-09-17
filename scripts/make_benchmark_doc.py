@@ -40,6 +40,13 @@ benchmark time" can be read two ways and the draft should not silently pick one:
                   done inside the threshold, and its complement in cases, which
                   is the count of patients who were not.
 
+BOTH REPORTING WINDOWS ARE BUILT, AND THE PAGE TOGGLES BETWEEN THEM. The
+April-September series runs 2020-2025; the 12-month fiscal-year series runs
+2020-2024, because 2025FY had not closed when the workbook was published. They
+are never mixed on one chart -- a 6-month count beside a 12-month one is not a
+comparison -- and the rate label changes with the window, since only the
+fiscal-year rate is an annual one.
+
 VOLUME IS A SECOND PANEL, NOT A SECOND AXIS. Volume shares the chart's x-axis on
 a strip directly beneath it, on its own zero-based scale. It is deliberately not
 plotted against a right-hand y-axis: two vertical scales on one frame let the
@@ -106,6 +113,43 @@ ABBR = {
 }
 
 
+WINDOWS = {
+    "aprsep": {
+        "file": "master_table.csv",
+        "label": "April–September",
+        "long": "April–September (6 months)",
+        "rate_unit": "per 100,000 aged 65+, 6 months",
+        "note": "",
+    },
+    "fy": {
+        "file": "master_table_fy.csv",
+        "label": "Fiscal year",
+        "long": "Fiscal year, April–March (12 months)",
+        "rate_unit": "per 100,000 aged 65+, annual",
+        "note": ("Newfoundland and Labrador published no 2024FY figures for either "
+                 "procedure — all four metrics are n/a in CIHI Table 1 (rows "
+                 "18790–18797). That province-year is absent here rather than "
+                 "imputed, so 2024 shows nine provinces, not ten."),
+    },
+}
+
+
+def back_test(df, threshold):
+    """
+    Run the benchmark model backwards: predict each province's published
+    "% meeting benchmark" from its own P50 and P90 under a candidate threshold.
+
+    Whichever threshold reproduces the published column is the one the provinces
+    actually computed against, which is how 112 days is ruled out for hip and
+    knee using nothing but the workbook's own numbers.
+    """
+    frac = ((np.log(threshold) - np.log(df.p50_wait_days))
+            / (np.log(df.p90_wait_days) - np.log(df.p50_wait_days)))
+    err = (0.5 + frac * 0.4) * 100 - df.pct_meeting_benchmark
+    return {"within5": int((err.abs() <= 5).sum()), "n": int(len(df)),
+            "median_err": round(float(err.abs().median()), 1)}
+
+
 def implied_threshold(df):
     """
     The benchmark threshold each province-year's own three numbers imply.
@@ -163,8 +207,9 @@ def as_document(artifact_html):
     )
 
 
-def main():
-    t = pd.read_csv(os.path.join(OUT, "master_table.csv"))
+def build_window(key):
+    spec = WINDOWS[key]
+    t = pd.read_csv(os.path.join(OUT, spec["file"]))
 
     rows = []
     for r in t.itertuples():
@@ -188,18 +233,33 @@ def main():
                .agg(["count", "median"]).round(1).reset_index())
     by_prov["abbr"] = by_prov.province.map(ABBR)
 
-    payload = {
+    return {
+        "key": key,
+        "label": spec["label"],
+        "long": spec["long"],
+        "rate_unit": spec["rate_unit"],
+        "note": spec["note"],
         "rows": rows,
-        "benchmark": BENCHMARK,
-        "benchmark_source": BENCHMARK_SOURCE,
-        "provinces": [{"name": p, "abbr": ABBR[p]} for p in sorted(ABBR)],
         "years": sorted(t.year.unique().tolist()),
+        "n_rows": int(len(t)),
+        "fully_within": int((t.p90_wait_days <= BENCHMARK).sum()),
         "implied": {
             "median": round(float(imp.implied.median()), 1),
             "cv": round(float(imp.implied.std() / imp.implied.mean()), 3),
             "n": int(len(imp)),
             "by_province": json.loads(by_prov.to_json(orient="records")),
         },
+        "backtest": {"b182": back_test(t, BENCHMARK), "b112": back_test(t, 112)},
+    }
+
+
+def main():
+    payload = {
+        "benchmark": BENCHMARK,
+        "benchmark_source": BENCHMARK_SOURCE,
+        "provinces": [{"name": p, "abbr": ABBR[p]} for p in sorted(ABBR)],
+        "windows": {k: build_window(k) for k in WINDOWS},
+        "default_window": "aprsep",
     }
 
     with open(os.path.join(HERE, "benchmark_template.html")) as fh:
@@ -219,9 +279,13 @@ def main():
     with open(data_path, "w") as fh:
         json.dump(payload, fh, indent=1)
     print(f"  data -> {data_path}")
-    print(f"  {len(rows)} province-years; benchmark drawn at {BENCHMARK} days")
-    print(f"  implied threshold: median {payload['implied']['median']}d, "
-          f"CV {payload['implied']['cv']}, n={payload['implied']['n']}")
+    print(f"  benchmark drawn at {BENCHMARK} days")
+    for k, w in payload["windows"].items():
+        bt = w["backtest"]
+        print(f"  {k:7s} {w['n_rows']:3d} rows, {w['years'][0]}-{w['years'][-1]}"
+              f" | implied {w['implied']['median']}d (CV {w['implied']['cv']})"
+              f" | 182d fits {bt['b182']['within5']}/{bt['b182']['n']},"
+              f" 112d fits {bt['b112']['within5']}/{bt['b112']['n']}")
 
 
 if __name__ == "__main__":

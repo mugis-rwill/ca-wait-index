@@ -13,8 +13,9 @@ Inputs (the only two files anything here reads):
     raw_data/wait-times-priority-procedures-in-canada-2008-2025-data-tables-en.xlsx
     raw_data/statcan_65plus_bands_provincial.csv
 
-Outputs land in output/, except index.html which is written to the repo root
-because it is the page GitHub Pages serves.
+Outputs land in output/, except index.html (the page GitHub Pages serves) and
+deliverables.html (a local, untracked contents page for everything else), both
+written to the repo root.
 
 Each step is deterministic: running twice produces byte-identical files, so a
 non-empty `git diff` after a rebuild means an input or a script changed, never
@@ -49,6 +50,8 @@ STEPS = [
      "make_fy_pairs_doc.py", []),
     ("benchmark view -> index.html",
      "make_benchmark_doc.py", []),
+    ("local contents page -> deliverables.html",
+     "make_local_index.py", []),
 ]
 
 
