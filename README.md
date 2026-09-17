@@ -15,7 +15,8 @@ raw_data/                       two files, and nothing else is read
         v
 scripts/build_master_table.py   --window aprsep | fy
         |
-        +--> output/master_table[_fy].{csv,xlsx,json}   the audit trail
+        +--> output/master_table[_fy].csv               the audit trail (tracked)
+        |    output/master_table[_fy].{xlsx,json}        convenience copies (ignored)
         |
         +--> scripts/matched_pairs.py      -> the Task 3 rule
         +--> scripts/make_benchmark_doc.py -> index.html          (the site)
@@ -37,7 +38,8 @@ python3 scripts/build_all.py --list   # show them without running
 
 Every step is deterministic — running twice produces byte-identical files, so a
 non-empty `git diff` after a rebuild means an input or a script changed, never
-the build.
+the build. (The `.xlsx` copies are the exception — `openpyxl` stamps the current
+time into them — which is one reason they are gitignored rather than tracked.)
 
 ## What each part does
 
@@ -52,27 +54,46 @@ the build.
   window.
 - **`scripts/make_benchmark_doc.py`** + **`scripts/benchmark_template.html`** —
   **the site.** Writes `index.html` and, from the same source, the skeleton-less
-  `output/benchmark_view.html` for publishing as an Artifact. **Edit the
-  template, never `index.html`** — the next build overwrites it.
+  `output/benchmark_view.html` (gitignored; for publishing as an Artifact).
+  **Edit the template, never `index.html`** — the next build overwrites it.
 - **`scripts/make_charts.py`**, **`make_pairs_doc.py`**, **`make_fy_pairs_doc.py`**
   and their `*_template.html` files — the three sibling pages.
 - **`scripts/make_local_index.py`** — writes `deliverables.html`, a local
   contents page listing every generated file with the command that produces it.
   Untracked, because it links almost entirely to gitignored files.
-- **`scripts/build_all.py`** — sequences all of the above.
+- **`scripts/build_all.py`** — sequences all of the above. The three index
+  steps always run; the six sibling steps run only when their script is present
+  and are skipped, with a note, when it is not — so a fresh clone builds the
+  site without error.
 - **`docs/`** — the written deliverables: the reporting-window and provenance
   findings, and the limitations page.
 
 ### What is tracked, and what is not
 
-Tracked: `raw_data/`, `scripts/`, `docs/`, `README.md`, `index.html`, and the
-Task 2 master tables and source tabs in `output/` — the audit trail behind the
-published figures.
+Tracked: `raw_data/`, `docs/`, `README.md`, `index.html`, and — as the audit
+trail behind the published figures — exactly the two files the index generator
+reads: `output/master_table.csv` and `output/master_table_fy.csv`. In
+`scripts/`, only what `index.html` depends on: `build_master_table.py`,
+`make_benchmark_doc.py`, `benchmark_template.html`, `build_all.py` and
+`requirements.txt`. A clean export of the tracked files rebuilds `index.html`
+byte-for-byte; that is the test the tracked set was cut against.
 
-Gitignored: the matched-pairs and charts pages and their data. They are
-deliverables, not part of the site, and `build_all.py` regenerates them exactly
-from tracked inputs — so committing them would only store a derived copy that
-can drift from its own source. Open `deliverables.html` to browse them.
+`index.html` also embeds the CIHI Table 1 row numbers behind every figure
+(`cihi_source_rows`), so the page is auditable on its own without the separate
+source tabs.
+
+Gitignored: the matched-pairs and charts pages, **the scripts and templates that
+make them** (`matched_pairs.py`, `make_charts.py`, `make_pairs_doc.py`,
+`make_fy_pairs_doc.py`, `make_local_index.py` and their `*_template.html`), and
+their data. They are separate work products, not part of the site. They remain
+on disk here and `build_all.py` runs them when present; on a machine without
+them the site still builds. Open `deliverables.html` to browse them locally.
+
+Also gitignored, from the index step itself: the `.json` and `.xlsx` copies of
+the master tables, the `sources*` provenance tabs, `benchmark_view.html` (the
+skeleton-less form of the page, for publishing as an Artifact) and
+`benchmark_data.json` (the payload embedded in both pages). All are regenerated
+by the build and read by nothing that is tracked.
 
 Also gitignored: **`_archive/`**. It holds the previous pooled-panel regression
 (`panel.py`, `regional_panel.py` and helpers) and the previous front page
