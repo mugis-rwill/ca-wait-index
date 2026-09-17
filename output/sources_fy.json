@@ -1,0 +1,28 @@
+[
+ {
+  "dataset": "CIHI wait times",
+  "exact_table_name": "Table 1  Wait times for priority procedures, by province and Canada, 2008 to 2025",
+  "sheet": "Table 1",
+  "file": "wait-times-priority-procedures-in-canada-2008-2025-data-tables-en.xlsx",
+  "publisher": "Canadian Institute for Health Information (CIHI)",
+  "citation": "Canadian Institute for Health Information. Wait Times for Priority Procedures in Canada, 2008-2025 - Data Tables. Ottawa, ON: CIHI; 2026.",
+  "downloaded": "2025-07-18",
+  "fields_used": "Reporting level, Province, Indicator, Metric, Data year, Unit of measurement, Indicator result",
+  "filter_applied": "Reporting level = 'Provincial'; Indicator in (Hip Replacement, Knee Replacement); Data year in (2020..2024) matched as exact '<year>FY' strings, excluding all bare-year (April-September) and Q3Q4 rows",
+  "reporting_window": "Fiscal year, April-March (12 months)",
+  "notes": "Hip and knee replacement results are submitted to CIHI by provincial ministries and agencies as aggregate figures. Only Hip Fracture Repair is calculated by CIHI from DAD/NACRS, and it is not used here. Data year is April-September unless suffixed FY (April-March) or Q3Q4 (October-March). Newfoundland and Labrador published no 2024FY figures for either procedure (all metrics n/a, Table 1 rows 18790-18797); that province-year is absent rather than imputed, so this table holds 98 rows, not 100."
+ },
+ {
+  "dataset": "StatCan population 65+",
+  "exact_table_name": "Table 17-10-0005-01 (Product ID 17100005; CANSIM 051-0001) - Population estimates on July 1, by age and gender",
+  "sheet": "n/a (CSV extract)",
+  "file": "statcan_65plus_bands_provincial.csv",
+  "publisher": "Statistics Canada",
+  "citation": "Statistics Canada. Table 17-10-0005-01 (Product ID 17100005; CANSIM 051-0001), Population estimates on July 1, by age and gender. https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000501",
+  "downloaded": "2025-09-10",
+  "fields_used": "REF_DATE, GEO, Age group, VALUE",
+  "filter_applied": "Age group = '65 years and older'; GEO in the 10 provinces; REF_DATE in 2020..2024",
+  "reporting_window": "July 1 estimate of the calendar year the fiscal year opens in",
+  "notes": "July 1 annual estimates; series end reference period 2025-01-01. Estimates for recent years are postcensal and are revised by Statistics Canada in later releases; the 2025 figure is preliminary postcensal."
+ }
+]
